@@ -2,10 +2,11 @@
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BIN_DIR="${HOME}/.local/bin"
-APP_DIR="${HOME}/.local/share/applications"
-PANEL_PLUGIN_DIR="${HOME}/.local/share/lxqt/lxqt-panel"
-AUTOSTART_DIR="${HOME}/.config/autostart"
+PREFIX="${PREFIX:-$HOME/.local}"
+BIN_DIR="${PREFIX}/bin"
+APP_DIR="${PREFIX}/share/applications"
+PANEL_PLUGIN_DIR="${PREFIX}/share/lxqt/lxqt-panel"
+AUTOSTART_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/autostart"
 
 echo "==> Installing NaraVisuals LXQt Widgets..."
 echo ""

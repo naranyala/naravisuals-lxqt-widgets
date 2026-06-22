@@ -13,4 +13,10 @@ setup(
         "notify2>=0.3",
     ],
     python_requires=">=3.10",
+    entry_points={
+        "console_scripts": [
+            "naravisuals-manager=naravisuals.panel_plugin:main",
+            "naravisuals-widget=naravisuals.widgets.__main__:main",
+        ]
+    },
 )

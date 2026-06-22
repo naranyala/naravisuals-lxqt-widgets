@@ -81,7 +81,12 @@ class PanelWidget(QWidget):
                 | Qt.WindowType.Tool
             )
             w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
-            w.setStyleSheet("background-color: #2d2d2d; border: 1px solid #555;")
+            
+            # Apply dynamic theming from QPalette instead of hardcoded colors
+            palette = app.palette()
+            bg_color = palette.color(palette.ColorRole.Window).name()
+            border_color = palette.color(palette.ColorRole.WindowText).name()
+            w.setStyleSheet(f"background-color: {bg_color}; border: 1px solid {border_color};")
 
             try:
                 idx = args.index("--position") if "--position" in args else args.index("-pos")
