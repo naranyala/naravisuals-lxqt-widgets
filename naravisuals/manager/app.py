@@ -96,6 +96,13 @@ WIDGETS = [
     ("ping_monitor", "Ping Monitor", "naravisuals.widgets.system.ping_monitor", "PingMonitor"),
     ("system_updates", "System Updates", "naravisuals.widgets.integrations.system_updates", "SystemUpdates"),
     ("kernel_version", "Kernel Version", "naravisuals.widgets.system.kernel_version", "KernelVersion"),
+    # Native Replacements
+    ("clock", "Native: Clock & Calendar", "naravisuals.widgets.native.clock", "ClockWidget"),
+    ("app_menu", "Native: App Menu", "naravisuals.widgets.native.app_menu", "AppMenuWidget"),
+    ("volume", "Native: Volume Control", "naravisuals.widgets.native.volume", "VolumeWidget"),
+    ("pager", "Native: Desktop Pager", "naravisuals.widgets.native.pager", "DesktopPagerWidget"),
+    ("taskbar", "Native: Taskbar", "naravisuals.widgets.native.taskbar", "TaskbarWidget"),
+    ("system_tray", "Native: System Tray", "naravisuals.widgets.native.system_tray", "SystemTrayWidget"),
 ]
 
 class WidgetConfigPage(QWidget):
