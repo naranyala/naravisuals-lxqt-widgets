@@ -3,84 +3,15 @@ import os
 import configparser
 import subprocess
 import importlib
+import shutil
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QPushButton, QListWidget, QStackedWidget, QLabel, QLineEdit, 
-    QComboBox, QFormLayout, QFrame, QMessageBox, QSpinBox
+    QComboBox, QFormLayout, QFrame, QMessageBox, QSpinBox, QFileDialog,
+    QListWidgetItem
 )
 from PyQt6.QtCore import Qt
 from naravisuals.core.config_manager import config
-
-class LXQtPanelConfigPage(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.layout = QVBoxLayout(self)
-        
-        header = QLabel("<h2>⚙️ Native LXQt Panel Settings</h2>")
-        self.layout.addWidget(header)
-        
-        line = QFrame()
-        line.setFrameShape(QFrame.Shape.HLine)
-        line.setFrameShadow(QFrame.Shadow.Sunken)
-        self.layout.addWidget(line)
-        
-        self.form_layout = QFormLayout()
-        self.layout.addLayout(self.form_layout)
-        
-        self.config_path = os.path.expanduser("~/.config/lxqt/panel.conf")
-        self.parser = configparser.ConfigParser()
-        
-        # Enable case-sensitive keys for LXQt compatibility
-        self.parser.optionxform = str
-        
-        if os.path.exists(self.config_path):
-            self.parser.read(self.config_path)
-        if "panel1" not in self.parser:
-            self.parser["panel1"] = {}
-            
-        panel_cfg = self.parser["panel1"]
-        
-        self.position = QComboBox()
-        self.position.addItems(["Top", "Bottom", "Left", "Right"])
-        self.position.setCurrentText(panel_cfg.get("position", "Bottom"))
-        self.form_layout.addRow("Panel Position:", self.position)
-        
-        self.size = QSpinBox()
-        self.size.setRange(16, 128)
-        self.size.setValue(int(panel_cfg.get("line_size", "32")))
-        self.size.setSuffix(" px")
-        self.form_layout.addRow("Panel Height/Width:", self.size)
-        
-        self.icon_size = QSpinBox()
-        self.icon_size.setRange(16, 64)
-        self.icon_size.setValue(int(panel_cfg.get("icon_size", "22")))
-        self.icon_size.setSuffix(" px")
-        self.form_layout.addRow("Icon Size:", self.icon_size)
-        
-        self.alignment = QComboBox()
-        self.alignment.addItems(["Left", "Center", "Right"])
-        self.alignment.setCurrentText(panel_cfg.get("alignment", "Left"))
-        self.form_layout.addRow("Alignment:", self.alignment)
-        
-        self.layout.addStretch()
-        
-        save_btn = QPushButton("💾 Save & Reload LXQt Panel")
-        save_btn.clicked.connect(self.save_settings)
-        self.layout.addWidget(save_btn)
-        
-    def save_settings(self):
-        p = self.parser["panel1"]
-        p["position"] = self.position.currentText()
-        p["line_size"] = str(self.size.value())
-        p["icon_size"] = str(self.icon_size.value())
-        p["alignment"] = self.alignment.currentText()
-        
-        os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
-        with open(self.config_path, 'w') as f:
-            self.parser.write(f)
-            
-        subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True)
-        QMessageBox.information(self, "Success", "LXQt Panel configuration saved and reloaded!")
 
 WIDGETS = [
     ("system_monitor", "System Monitor", "naravisuals.widgets.system.system_monitor", "SystemMonitor"),
@@ -105,6 +36,245 @@ WIDGETS = [
     ("system_tray", "Native: System Tray", "naravisuals.widgets.native.system_tray", "SystemTrayWidget"),
 ]
 
+class LXQtPanelConfigPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QVBoxLayout(self)
+        
+        header = QLabel("<h2>⚙️ Panel Organizer</h2>")
+        self.layout.addWidget(header)
+        
+        self.config_path = os.path.expanduser("~/.config/lxqt/panel.conf")
+        self.parser = configparser.ConfigParser()
+        self.parser.optionxform = str
+        
+        if os.path.exists(self.config_path):
+            self.parser.read(self.config_path)
+            
+        self.panels = []
+        if "general" in self.parser and "panels" in self.parser["general"]:
+            self.panels = [p.strip() for p in self.parser["general"]["panels"].split(",") if p.strip()]
+        if not self.panels:
+            self.panels = [s for s in self.parser.sections() if s.startswith("panel")]
+        if not self.panels:
+            self.panels = ["panel1"]
+            if "panel1" not in self.parser:
+                self.parser["panel1"] = {}
+                
+        top_row = QHBoxLayout()
+        top_row.addWidget(QLabel("<b>Target Panel:</b>"))
+        self.panel_selector = QComboBox()
+        self.panel_selector.addItems(self.panels)
+        self.panel_selector.currentTextChanged.connect(self.load_panel_layout)
+        top_row.addWidget(self.panel_selector)
+        
+        top_row.addStretch()
+        
+        import_btn = QPushButton("📥 Import Template")
+        import_btn.clicked.connect(self.import_template)
+        top_row.addWidget(import_btn)
+        
+        export_btn = QPushButton("📤 Export Template")
+        export_btn.clicked.connect(self.export_template)
+        top_row.addWidget(export_btn)
+        
+        self.layout.addLayout(top_row)
+        
+        lists_layout = QHBoxLayout()
+        
+        left_layout = QVBoxLayout()
+        left_layout.addWidget(QLabel("<b>Available Widgets</b>"))
+        self.list_available = QListWidget()
+        # Restrict left list to not accept drops to keep it an "inventory"
+        self.list_available.setDragDropMode(QListWidget.DragDropMode.NoDragDrop)
+        left_layout.addWidget(self.list_available)
+        lists_layout.addLayout(left_layout)
+        
+        # Action Buttons
+        mid_layout = QVBoxLayout()
+        mid_layout.addStretch()
+        
+        self.btn_add = QPushButton("▶ Add")
+        self.btn_add.clicked.connect(self.move_to_active)
+        self.btn_add.setEnabled(False)
+        mid_layout.addWidget(self.btn_add)
+        
+        self.btn_rm = QPushButton("◀ Remove")
+        self.btn_rm.clicked.connect(self.move_to_available)
+        self.btn_rm.setEnabled(False)
+        mid_layout.addWidget(self.btn_rm)
+        
+        mid_layout.addSpacing(20)
+        
+        self.btn_up = QPushButton("▲ Move Left")
+        self.btn_up.clicked.connect(self.move_item_up)
+        self.btn_up.setEnabled(False)
+        mid_layout.addWidget(self.btn_up)
+        
+        self.btn_down = QPushButton("▼ Move Right")
+        self.btn_down.clicked.connect(self.move_item_down)
+        self.btn_down.setEnabled(False)
+        mid_layout.addWidget(self.btn_down)
+        
+        mid_layout.addStretch()
+        lists_layout.addLayout(mid_layout)
+        
+        right_layout = QVBoxLayout()
+        right_layout.addWidget(QLabel("<b>Active Panel Layout</b>"))
+        self.list_active = QListWidget()
+        # Internal move prevents messy duplicates during drag and drop
+        self.list_active.setDragDropMode(QListWidget.DragDropMode.InternalMove)
+        right_layout.addWidget(self.list_active)
+        lists_layout.addLayout(right_layout)
+        
+        self.layout.addLayout(lists_layout)
+        
+        self.list_available.itemSelectionChanged.connect(self.update_button_states)
+        self.list_active.itemSelectionChanged.connect(self.update_button_states)
+        
+        self.load_panel_layout(self.panel_selector.currentText())
+        
+        save_btn = QPushButton("💾 Save & Restart Panel")
+        save_btn.clicked.connect(self.save_settings)
+        self.layout.addWidget(save_btn)
+
+    def update_button_states(self):
+        has_avail = len(self.list_available.selectedItems()) > 0
+        has_active = len(self.list_active.selectedItems()) > 0
+        
+        row = self.list_active.currentRow()
+        can_move_up = has_active and row > 0
+        can_move_down = has_active and row >= 0 and row < (self.list_active.count() - 1)
+        
+        self.btn_add.setEnabled(has_avail)
+        self.btn_rm.setEnabled(has_active)
+        self.btn_up.setEnabled(can_move_up)
+        self.btn_down.setEnabled(can_move_down)
+
+    def get_widget_name(self, w_id):
+        for w in WIDGETS:
+            if w[0] == w_id:
+                return w[1]
+        native = {
+            "mainmenu": "Main Menu (Native)",
+            "desktopswitch": "Desktop Switcher",
+            "quicklaunch": "Quick Launch",
+            "taskbar": "Taskbar (Native)",
+            "tray": "System Tray (Native)",
+            "statusnotifier": "Status Notifier",
+            "volume": "Volume Control (Native)",
+            "clock": "Clock (Native)",
+            "spacer": "Spacer"
+        }
+        return native.get(w_id, w_id)
+
+    def load_panel_layout(self, panel_name):
+        self.list_active.clear()
+        self.list_available.clear()
+        
+        available_ids = [w[0] for w in WIDGETS]
+        available_ids.extend(["mainmenu", "desktopswitch", "quicklaunch", "taskbar", "tray", "statusnotifier", "volume", "clock", "spacer"])
+        
+        active_ids = []
+        if panel_name in self.parser and "plugins" in self.parser[panel_name]:
+            active_ids = [p.strip() for p in self.parser[panel_name]["plugins"].split(",") if p.strip()]
+            
+        for a_id in active_ids:
+            item = QListWidgetItem(self.get_widget_name(a_id))
+            item.setData(Qt.ItemDataRole.UserRole, a_id)
+            self.list_active.addItem(item)
+            if a_id in available_ids:
+                available_ids.remove(a_id)
+                
+        for avail_id in available_ids:
+            item = QListWidgetItem(self.get_widget_name(avail_id))
+            item.setData(Qt.ItemDataRole.UserRole, avail_id)
+            self.list_available.addItem(item)
+
+    def move_to_active(self):
+        for item in self.list_available.selectedItems():
+            row = self.list_available.row(item)
+            # Take and copy so it stays in inventory
+            taken = self.list_available.takeItem(row)
+            new_item = QListWidgetItem(taken.text())
+            new_item.setData(Qt.ItemDataRole.UserRole, taken.data(Qt.ItemDataRole.UserRole))
+            self.list_active.addItem(new_item)
+            # Optionally add it back to available so they can use multiple instances (like spacers)
+            self.list_available.insertItem(row, taken)
+            
+    def move_to_available(self):
+        for item in self.list_active.selectedItems():
+            row = self.list_active.row(item)
+            taken = self.list_active.takeItem(row)
+            # If it's not already in available, add it back
+            is_present = False
+            for i in range(self.list_available.count()):
+                if self.list_available.item(i).data(Qt.ItemDataRole.UserRole) == taken.data(Qt.ItemDataRole.UserRole):
+                    is_present = True
+                    break
+            if not is_present:
+                self.list_available.addItem(taken)
+            
+    def move_item_up(self):
+        row = self.list_active.currentRow()
+        if row > 0:
+            item = self.list_active.takeItem(row)
+            self.list_active.insertItem(row - 1, item)
+            self.list_active.setCurrentRow(row - 1)
+            
+    def move_item_down(self):
+        row = self.list_active.currentRow()
+        if row < self.list_active.count() - 1 and row >= 0:
+            item = self.list_active.takeItem(row)
+            self.list_active.insertItem(row + 1, item)
+            self.list_active.setCurrentRow(row + 1)
+
+    def save_settings(self):
+        panel_name = self.panel_selector.currentText()
+        if panel_name not in self.parser:
+            self.parser[panel_name] = {}
+            
+        active_plugins = [self.list_active.item(i).data(Qt.ItemDataRole.UserRole) for i in range(self.list_active.count())]
+        self.parser[panel_name]["plugins"] = ", ".join(active_plugins)
+        
+        os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+        with open(self.config_path, 'w') as f:
+            self.parser.write(f)
+            
+        subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True)
+        QMessageBox.information(self, "Success", f"Layout for {panel_name} saved and applied!")
+
+    def import_template(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Import Template", "", "INI Files (*.ini);;All Files (*)")
+        if file_path:
+            shutil.copyfile(file_path, self.config_path)
+            self.parser.read(self.config_path)
+            
+            self.panels = []
+            if "general" in self.parser and "panels" in self.parser["general"]:
+                self.panels = [p.strip() for p in self.parser["general"]["panels"].split(",") if p.strip()]
+            if not self.panels:
+                self.panels = [s for s in self.parser.sections() if s.startswith("panel")]
+            if not self.panels:
+                self.panels = ["panel1"]
+                
+            self.panel_selector.blockSignals(True)
+            self.panel_selector.clear()
+            self.panel_selector.addItems(self.panels)
+            self.panel_selector.blockSignals(False)
+            
+            self.load_panel_layout(self.panel_selector.currentText())
+            subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True)
+            QMessageBox.information(self, "Imported", "Template imported and applied successfully!")
+
+    def export_template(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export Template", "", "INI Files (*.ini)")
+        if file_path:
+            if not file_path.endswith('.ini'):
+                file_path += '.ini'
+            shutil.copyfile(self.config_path, file_path)
+            QMessageBox.information(self, "Exported", f"Template successfully exported to:\n{file_path}")
+
 class WidgetConfigPage(QWidget):
     def __init__(self, w_id, name, mod_path, cls_name, launcher_cb):
         super().__init__()
@@ -114,22 +284,18 @@ class WidgetConfigPage(QWidget):
         
         self.layout = QVBoxLayout(self)
         
-        # Header
         header = QLabel(f"<h2>{name} Settings</h2>")
         self.layout.addWidget(header)
         
-        # Launch Button
         launch_btn = QPushButton(f"🚀 Launch {name} (Standalone)")
         launch_btn.clicked.connect(lambda: self.launcher_cb(w_id, mod_path, cls_name, name))
         self.layout.addWidget(launch_btn)
         
-        # Divider
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
         self.layout.addWidget(line)
         
-        # Settings Form
         self.form_layout = QFormLayout()
         self.layout.addLayout(self.form_layout)
         
@@ -138,7 +304,6 @@ class WidgetConfigPage(QWidget):
         
         self.layout.addStretch()
         
-        # Save Button
         save_btn = QPushButton("💾 Save Settings")
         save_btn.clicked.connect(self.save_settings)
         self.layout.addWidget(save_btn)
@@ -193,7 +358,7 @@ class ManagerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("NaraVisuals Settings Hub")
-        self.setGeometry(100, 100, 700, 500)
+        self.setGeometry(100, 100, 750, 550)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -201,17 +366,27 @@ class ManagerWindow(QMainWindow):
         
         self._running_widgets = {}
 
-        # Sidebar
+        sidebar_layout = QVBoxLayout()
+        sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        
         self.sidebar = QListWidget()
         self.sidebar.setFixedWidth(200)
-        main_layout.addWidget(self.sidebar)
+        sidebar_layout.addWidget(self.sidebar)
         
-        # Stacked Widget Pages
+        reload_btn = QPushButton("🔄 Reload Panel")
+        reload_btn.clicked.connect(lambda: subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True))
+        sidebar_layout.addWidget(reload_btn)
+        
+        exit_btn = QPushButton("❌ Exit Hub")
+        exit_btn.clicked.connect(self.close)
+        sidebar_layout.addWidget(exit_btn)
+        
+        main_layout.addLayout(sidebar_layout)
+        
         self.pages = QStackedWidget()
         main_layout.addWidget(self.pages)
         
-        # Add Native Panel Settings First
-        self.sidebar.addItem("⚙️ LXQt Panel")
+        self.sidebar.addItem("⚙️ Panel Organizer")
         lxqt_page = LXQtPanelConfigPage()
         self.pages.addWidget(lxqt_page)
         
@@ -244,10 +419,7 @@ class ManagerWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    
-    # Apply modern styling
     app.setStyle("Fusion")
-    
     win = ManagerWindow()
     win.show()
     sys.exit(app.exec())
