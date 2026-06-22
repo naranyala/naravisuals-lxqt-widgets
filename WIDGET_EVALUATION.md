@@ -24,11 +24,4 @@ All 16 widgets successfully pass the following checks:
 * **TrayEnhanced:** Stable, but X11 tray manipulation is inherently fragile. Wayland migration will require dropping this or migrating to StatusNotifierItem.
 * **MediaPlayerController:** Relies on D-Bus MPRIS. Handled gracefully if no players are active.
 
-### Experimental / API-Exposing Widgets
-* **AudioVisualizer:** MVP rendering works flawlessly. **Next Step:** Hook into `pyaudio` or `pipewire` for real PCM buffer reading.
-* **ContainerRadar:** Subprocess call to `docker` is safely encapsulated. Handles `PermissionDenied` gracefully.
-* **GPUMatrix:** Calls `nvidia-smi`. Fallbacks work gracefully when NVIDIA drivers are absent.
-* **BluetoothRadar:** Calls `bluetoothctl`. Parsing logic is stable. **Next Step:** Migrate to native D-Bus for better performance and event-driven updates.
-* **SystemLogTicker:** `QProcess` tailing `journalctl` works securely and asynchronously without blocking the UI thread.
-* **SmartHomeToggle:** Uses `requests` with a timeout, preventing the GUI from freezing if the Home Assistant server is unreachable.
-* **APMCounter:** Simulated logic is perfectly stable. **Next Step:** Requires `evdev` integration, which will demand `udev` rules to grant the user input permissions.
+

@@ -1,4 +1,7 @@
 import sys
+import os
+import configparser
+import subprocess
 import importlib
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
@@ -6,25 +9,93 @@ from PyQt6.QtWidgets import (
     QComboBox, QFormLayout, QFrame, QMessageBox, QSpinBox
 )
 from PyQt6.QtCore import Qt
-from naravisuals.config import config
+from naravisuals.core.config_manager import config
+
+class LXQtPanelConfigPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QVBoxLayout(self)
+        
+        header = QLabel("<h2>⚙️ Native LXQt Panel Settings</h2>")
+        self.layout.addWidget(header)
+        
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
+        self.layout.addWidget(line)
+        
+        self.form_layout = QFormLayout()
+        self.layout.addLayout(self.form_layout)
+        
+        self.config_path = os.path.expanduser("~/.config/lxqt/panel.conf")
+        self.parser = configparser.ConfigParser()
+        
+        # Enable case-sensitive keys for LXQt compatibility
+        self.parser.optionxform = str
+        
+        if os.path.exists(self.config_path):
+            self.parser.read(self.config_path)
+        if "panel1" not in self.parser:
+            self.parser["panel1"] = {}
+            
+        panel_cfg = self.parser["panel1"]
+        
+        self.position = QComboBox()
+        self.position.addItems(["Top", "Bottom", "Left", "Right"])
+        self.position.setCurrentText(panel_cfg.get("position", "Bottom"))
+        self.form_layout.addRow("Panel Position:", self.position)
+        
+        self.size = QSpinBox()
+        self.size.setRange(16, 128)
+        self.size.setValue(int(panel_cfg.get("line_size", "32")))
+        self.size.setSuffix(" px")
+        self.form_layout.addRow("Panel Height/Width:", self.size)
+        
+        self.icon_size = QSpinBox()
+        self.icon_size.setRange(16, 64)
+        self.icon_size.setValue(int(panel_cfg.get("icon_size", "22")))
+        self.icon_size.setSuffix(" px")
+        self.form_layout.addRow("Icon Size:", self.icon_size)
+        
+        self.alignment = QComboBox()
+        self.alignment.addItems(["Left", "Center", "Right"])
+        self.alignment.setCurrentText(panel_cfg.get("alignment", "Left"))
+        self.form_layout.addRow("Alignment:", self.alignment)
+        
+        self.layout.addStretch()
+        
+        save_btn = QPushButton("💾 Save & Reload LXQt Panel")
+        save_btn.clicked.connect(self.save_settings)
+        self.layout.addWidget(save_btn)
+        
+    def save_settings(self):
+        p = self.parser["panel1"]
+        p["position"] = self.position.currentText()
+        p["line_size"] = str(self.size.value())
+        p["icon_size"] = str(self.icon_size.value())
+        p["alignment"] = self.alignment.currentText()
+        
+        os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+        with open(self.config_path, 'w') as f:
+            self.parser.write(f)
+            
+        subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True)
+        QMessageBox.information(self, "Success", "LXQt Panel configuration saved and reloaded!")
 
 WIDGETS = [
-    ("system_monitor", "System Monitor", "naravisuals.widgets.system_monitor", "SystemMonitor"),
-    ("weather", "Weather", "naravisuals.widgets.weather", "WeatherWidget"),
-    ("quick_notes", "Quick Notes", "naravisuals.widgets.quick_notes", "QuickNotes"),
-    ("clipboard_manager", "Clipboard Manager", "naravisuals.widgets.clipboard_manager", "ClipboardManager"),
-    ("pomodoro", "Pomodoro Timer", "naravisuals.widgets.pomodoro", "PomodoroTimer"),
-    ("network_monitor", "Network Monitor", "naravisuals.widgets.network_monitor", "NetworkMonitor"),
-    ("tray_enhanced", "Tray Enhanced", "naravisuals.widgets.tray_enhanced", "TrayEnhanced"),
-    ("media_player", "Media Player", "naravisuals.widgets.media_player", "MediaPlayerController"),
-    ("battery", "Battery Info", "naravisuals.widgets.battery", "BatteryInfo"),
-    ("audio_visualizer", "Audio Visualizer", "naravisuals.widgets.audio_visualizer", "AudioVisualizer"),
-    ("container_radar", "Container Radar", "naravisuals.widgets.container_radar", "ContainerRadar"),
-    ("gpu_matrix", "GPU Matrix", "naravisuals.widgets.gpu_matrix", "GPUMatrix"),
-    ("bluetooth_radar", "Bluetooth Radar", "naravisuals.widgets.bluetooth_radar", "BluetoothRadar"),
-    ("system_log", "System Log Ticker", "naravisuals.widgets.system_log", "SystemLogTicker"),
-    ("smart_home", "Smart Home Toggle", "naravisuals.widgets.smart_home", "SmartHomeToggle"),
-    ("apm_counter", "APM Counter", "naravisuals.widgets.apm_counter", "APMCounter"),
+    ("system_monitor", "System Monitor", "naravisuals.widgets.system.system_monitor", "SystemMonitor"),
+    ("weather", "Weather", "naravisuals.widgets.integrations.weather", "WeatherWidget"),
+    ("quick_notes", "Quick Notes", "naravisuals.widgets.productivity.quick_notes", "QuickNotes"),
+    ("clipboard_manager", "Clipboard Manager", "naravisuals.widgets.productivity.clipboard_manager", "ClipboardManager"),
+    ("pomodoro", "Pomodoro Timer", "naravisuals.widgets.productivity.pomodoro", "PomodoroTimer"),
+    ("network_monitor", "Network Monitor", "naravisuals.widgets.system.network_monitor", "NetworkMonitor"),
+    ("tray_enhanced", "Tray Enhanced", "naravisuals.widgets.integrations.tray_enhanced", "TrayEnhanced"),
+    ("media_player", "Media Player", "naravisuals.widgets.integrations.media_player", "MediaPlayerController"),
+    ("battery", "Battery Info", "naravisuals.widgets.system.battery", "BatteryInfo"),
+    ("uptime", "Uptime Counter", "naravisuals.widgets.system.uptime", "UptimeWidget"),
+    ("ping_monitor", "Ping Monitor", "naravisuals.widgets.system.ping_monitor", "PingMonitor"),
+    ("system_updates", "System Updates", "naravisuals.widgets.integrations.system_updates", "SystemUpdates"),
+    ("kernel_version", "Kernel Version", "naravisuals.widgets.system.kernel_version", "KernelVersion"),
 ]
 
 class WidgetConfigPage(QWidget):
@@ -131,6 +202,11 @@ class ManagerWindow(QMainWindow):
         # Stacked Widget Pages
         self.pages = QStackedWidget()
         main_layout.addWidget(self.pages)
+        
+        # Add Native Panel Settings First
+        self.sidebar.addItem("⚙️ LXQt Panel")
+        lxqt_page = LXQtPanelConfigPage()
+        self.pages.addWidget(lxqt_page)
         
         for w_id, name, mod_path, cls_name in WIDGETS:
             self.sidebar.addItem(name)

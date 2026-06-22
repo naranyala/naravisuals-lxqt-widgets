@@ -7,7 +7,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QLineEdit, QPushButton
 
-from naravisuals.base import PanelWidget
+from naravisuals.core.base_widget import PanelWidget
 
 
 CONFIG_PATH = os.path.expanduser("~/.config/naravisuals/weather.json")

@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter, QColor, QFont, QPen
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 
-from naravisuals.base import PanelWidget
+from naravisuals.core.base_widget import PanelWidget
 
 
 class BatteryIcon(QWidget):

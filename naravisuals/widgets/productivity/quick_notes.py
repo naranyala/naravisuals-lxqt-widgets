@@ -4,7 +4,7 @@ import os
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QTextEdit, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QListWidget, QSplitter, QWidget
 
-from naravisuals.base import PanelWidget
+from naravisuals.core.base_widget import PanelWidget
 
 
 NOTES_PATH = os.path.expanduser("~/.config/naravisuals/notes.json")

@@ -2,7 +2,7 @@ import dbus
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QSlider
 
-from naravisuals.base import PanelWidget
+from naravisuals.core.base_widget import PanelWidget
 
 
 class MediaPlayerController(PanelWidget):

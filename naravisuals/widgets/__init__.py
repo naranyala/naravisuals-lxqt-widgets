@@ -7,10 +7,7 @@ from .network_monitor import NetworkMonitor
 from .tray_enhanced import TrayEnhanced
 from .media_player import MediaPlayerController
 from .battery import BatteryInfo
-from .audio_visualizer import AudioVisualizer
-from .container_radar import ContainerRadar
-from .gpu_matrix import GPUMatrix
-from .bluetooth_radar import BluetoothRadar
-from .system_log import SystemLogTicker
-from .smart_home import SmartHomeToggle
-from .apm_counter import APMCounter
+from .uptime import UptimeWidget
+from .ping_monitor import PingMonitor
+from .system_updates import SystemUpdates
+from .kernel_version import KernelVersion

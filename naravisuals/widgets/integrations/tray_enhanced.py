@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QMenu
 
-from naravisuals.base import PanelWidget
+from naravisuals.core.base_widget import PanelWidget
 
 
 class TrayEnhanced(PanelWidget):

@@ -29,14 +29,6 @@ The repository currently provides 16 widgets, ranging from standard desktop util
 * **Pomodoro Timer:** Standardized productivity timer.
 * **Media Player:** MPRIS-compatible controls for external media clients.
 
-### System & Hardware Integrations
-* **Container Radar:** Live dashboard for monitoring Docker and Podman instances.
-* **GPU Matrix:** Direct hooks into `nvidia-smi` for thermal and VRAM utilization tracking.
-* **Bluetooth Radar:** D-Bus integrated scanning for nearby Bluetooth devices.
-* **Audio Visualizer:** Animated frequency spectrum matrix.
-* **System Log Ticker:** Live streaming output of critical `journalctl` panics and errors.
-* **Smart Home Toggle:** Configurable webhook execution for endpoints such as Home Assistant.
-
 ## Installation
 
 ### Arch Linux (AUR)

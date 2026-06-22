@@ -15,7 +15,7 @@ setup(
     python_requires=">=3.10",
     entry_points={
         "console_scripts": [
-            "naravisuals-manager=naravisuals.panel_plugin:main",
+            "naravisuals-manager=naravisuals.manager.app:main",
             "naravisuals-widget=naravisuals.widgets.__main__:main",
         ]
     },

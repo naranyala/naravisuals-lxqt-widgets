@@ -9,22 +9,19 @@ from PyQt6.QtWidgets import QApplication
 import naravisuals.widgets as w
 
 WIDGET_CLASSES = [
-    w.SystemMonitor,
-    w.WeatherWidget,
-    w.QuickNotes,
-    w.ClipboardManager,
-    w.PomodoroTimer,
-    w.NetworkMonitor,
-    w.TrayEnhanced,
-    w.MediaPlayerController,
-    w.BatteryInfo,
-    w.AudioVisualizer,
-    w.ContainerRadar,
-    w.GPUMatrix,
-    w.BluetoothRadar,
-    w.SystemLogTicker,
-    w.SmartHomeToggle,
-    w.APMCounter
+    w.system.system_monitor.SystemMonitor,
+    w.integrations.weather.WeatherWidget,
+    w.productivity.quick_notes.QuickNotes,
+    w.productivity.clipboard_manager.ClipboardManager,
+    w.productivity.pomodoro.PomodoroTimer,
+    w.system.network_monitor.NetworkMonitor,
+    w.integrations.tray_enhanced.TrayEnhanced,
+    w.integrations.media_player.MediaPlayerController,
+    w.system.battery.BatteryInfo,
+    w.system.uptime.UptimeWidget,
+    w.system.ping_monitor.PingMonitor,
+    w.integrations.system_updates.SystemUpdates,
+    w.system.kernel_version.KernelVersion
 ]
 
 class TestWidgets(unittest.TestCase):
@@ -46,6 +43,13 @@ class TestWidgets(unittest.TestCase):
                         widget._on_tick()
                 except Exception as e:
                     self.fail(f"{widget_cls.__name__} failed during instantiation or tick: {e}")
+
+    @classmethod
+    def tearDownClass(cls):
+        from PyQt6.QtCore import QThreadPool
+        # Wait for all async subprocesses (like checkupdates or ping) to finish 
+        # before tearing down the QApplication to prevent C++ wrapper deletion errors.
+        QThreadPool.globalInstance().waitForDone()
 
 if __name__ == '__main__':
     unittest.main()
