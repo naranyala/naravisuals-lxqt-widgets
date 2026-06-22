@@ -8,26 +8,37 @@ Next-Generation, API-Driven Panel Widgets for the LXQt Desktop Environment.
 
 NaraVisuals provides advanced customization and extended functionality to the lightweight LXQt desktop. By integrating a highly performant native C++ panel plugin with a feature-rich Python and PyQt6 daemon, it allows for the embedding of complex UI elements directly into the LXQt panel while maintaining optimal system performance.
 
-## Architecture & Design
+## Architecture & Directory Structure
 
-Traditional panel widgets are often static and difficult to extend. NaraVisuals modernizes panel applets by utilizing Python for rapid development and API integration.
+The repository is built upon a scalable, domain-driven architecture designed to separate core logic, configuration, and user interfaces.
 
-* **Dynamic Theming:** All widgets automatically inherit and adapt to the active LXQt `QPalette` system, supporting seamless transitions between light and dark themes.
-* **Centralized Configuration:** Manual configuration files are deprecated in favor of a unified GUI Settings Hub (`naravisuals-manager`).
-* **Client-Server Model:** Widget UI rendering executes within the panel, while heavy processing and data retrieval are offloaded to a headless background Python service to keep the LXQt session responsive.
-* **Extensibility:** Developing a new panel widget requires minimal Python code, allowing for rapid integration with system processes and external APIs.
+* `naravisuals/core/`: Contains the foundational `base_widget` classes, asynchronous execution utilities (`async_utils`), and configuration parsers (`config_manager`).
+* `naravisuals/manager/`: Houses the centralized Settings Hub (`naravisuals-manager`) utilized for visually configuring both the native LXQt panel and individual widgets.
+* `naravisuals/widgets/`: Contains all widget implementations categorized strictly by their domain (`system/`, `productivity/`, `integrations/`).
+* `native-plugin/`: The native C++ bridge responsible for executing and rendering the Python instances directly inside the X11 LXQt panel.
 
 ## Included Modules
 
-The repository currently provides 16 widgets, ranging from standard desktop utilities to deep system-level integrations.
+The repository currently provides 13 highly optimized widgets, structurally categorized for easy maintenance.
 
-### Core Utilities
+### System
 * **System Monitor:** Real-time tracking of CPU, RAM, Disk, and SWAP.
-* **Network Monitor:** Live traffic graphing for specified interfaces (e.g., `eth0`, `wlan0`).
-* **Clipboard Manager:** Persistent clipboard history tracking.
+* **Network Monitor:** Live traffic graphing for specified interfaces.
+* **Battery Info:** Hardware battery percentage and status monitoring.
+* **Uptime Counter:** Constant tracking of system uptime parameters.
+* **Ping Monitor:** Asynchronous monitoring of internet latency.
+* **Kernel Version:** Display of the currently active Linux kernel.
+
+### Productivity
+* **Pomodoro Timer:** Standardized productivity timer with configurable intervals.
 * **Quick Notes:** Direct panel-integrated text storage.
-* **Pomodoro Timer:** Standardized productivity timer.
+* **Clipboard Manager:** Persistent clipboard history tracking.
+
+### Integrations
+* **Weather:** Configurable location-based meteorological data.
 * **Media Player:** MPRIS-compatible controls for external media clients.
+* **System Updates:** Background verification of pending package updates.
+* **Tray Enhanced:** Extended system tray functionality.
 
 ## Installation
 
@@ -51,15 +62,13 @@ PREFIX=/usr ./install.sh
 
 Once the installation is complete, right-click the LXQt panel, select **Add Widgets**, and search for `NaraVisuals`.
 
-To configure widget parameters, launch the unified Settings Hub from your terminal or application launcher:
+To configure widget parameters and global LXQt panel settings, launch the unified Settings Hub from your terminal or application launcher:
 ```bash
 naravisuals-manager
 ```
-This interface allows for the configuration of environmental variables such as weather locations, network interfaces, and external API endpoints.
 
 ## Roadmap
 
 * Implement complete Wayland migration (Layer Shell and native D-Bus IPC).
 * Finalize PyPI distribution packaging (`pip install naravisuals`).
-* Integrate `evdev` for the APM Counter widget.
-* Implement Pipewire PCM hooks for the Audio Visualizer.
+* Abstract data providers entirely from the PyQt UI layer.
