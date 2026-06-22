@@ -1,41 +1,27 @@
 #include <QWidget>
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QComboBox>
 #include <QPushButton>
-#include <QProcess>
-#include <QWindow>
-#include <QDebug>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusReply>
+#include <QDBusAbstractAdaptor>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QTimer>
-#include <QDir>
-#include <QFileInfo>
-#include <QLibrary>
-#include <dlfcn.h>
+#include <QDebug>
+#include <QBoxLayout>
 
 #include <ilxqtpanelplugin.h>
 #include <pluginsettings.h>
 
-// Force liblxqt.so.2 into NEEDED entries
-#include <LXQt/lxqttranslator.h>
-
-static QString detectWidgetFromLibName()
-{
-    Dl_info info;
-    if (dladdr((void*)detectWidgetFromLibName, &info) && info.dli_fname)
-    {
-        QFileInfo fi(info.dli_fname);
-        QString base = fi.baseName();
-        if (base.startsWith("lib"))
-            base = base.mid(3);
-        if (base == "naravisuals")
-            return QString();
-        QString prefix = "naravisuals-";
-        if (base.startsWith(prefix))
-            return base.mid(prefix.length());
-    }
-    return QString();
-}
+static const QString BUS_NAME = "org.naravisuals.Daemon";
+static const QString OBJ_PATH = "/org/naravisuals/Daemon";
+static const QString IFACE_NAME = "org.naravisuals.Daemon";
 
 static QStringList allWidgets()
 {
@@ -45,6 +31,187 @@ static QStringList allWidgets()
     };
 }
 
+// --- Renderer base class ---
+class WidgetRenderer : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit WidgetRenderer(QWidget *parent = nullptr) : QWidget(parent) {}
+    virtual void updateData(const QJsonObject &data) = 0;
+};
+
+// --- Text renderer (kernel, uptime, ping) ---
+class TextRenderer : public WidgetRenderer
+{
+    Q_OBJECT
+public:
+    explicit TextRenderer(QWidget *parent = nullptr) : WidgetRenderer(parent)
+    {
+        _label = new QLabel(this);
+        _label->setAlignment(Qt::AlignCenter);
+        _label->setStyleSheet("color: #ccc; font-size: 11px;");
+        QVBoxLayout *lay = new QVBoxLayout(this);
+        lay->setContentsMargins(4, 2, 4, 2);
+        lay->addWidget(_label);
+    }
+
+    void updateData(const QJsonObject &data) override
+    {
+        // Try common keys
+        for (const QString &key : {"formatted", "kernel", "host", "description", "temp_c"})
+        {
+            if (data.contains(key))
+            {
+                QString text = data[key].toString();
+                if (key == "temp_c" && text != "--")
+                    text += " C";
+                _label->setText(text);
+                return;
+            }
+        }
+        _label->setText(QJsonDocument(data).toJson(QJsonDocument::Compact));
+    }
+
+private:
+    QLabel *_label;
+};
+
+// --- Bar renderer (CPU, RAM, disk usage) ---
+class BarRenderer : public WidgetRenderer
+{
+    Q_OBJECT
+public:
+    explicit BarRenderer(QWidget *parent = nullptr) : WidgetRenderer(parent)
+    {
+        setMinimumHeight(18);
+        setMaximumHeight(18);
+    }
+
+    void setLabel(const QString &label) { _label = label; }
+    void setColor(const QColor &color) { _color = color; }
+
+    void updateData(const QJsonObject &data) override
+    {
+        QString key = _label.toLower() + "_percent";
+        _value = data.value(key).toDouble();
+        update();
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter p(this);
+        int w = width(), h = height();
+        p.fillRect(0, 0, w, h, QColor(40, 40, 40));
+        int fill = int(w * _value / 100.0);
+        p.fillRect(0, 0, fill, h, _color);
+        p.setPen(QColor(200, 200, 200));
+        p.drawText(4, 0, w - 4, h, Qt::AlignVCenter,
+                   QString("%1: %2%").arg(_label).arg(_value, 0, 'f', 1));
+    }
+
+private:
+    QString _label;
+    QColor _color = Qt::green;
+    double _value = 0;
+};
+
+// --- Composite renderer (system monitor with multiple bars) ---
+class SystemMonitorRenderer : public WidgetRenderer
+{
+    Q_OBJECT
+public:
+    explicit SystemMonitorRenderer(QWidget *parent = nullptr) : WidgetRenderer(parent)
+    {
+        QHBoxLayout *lay = new QHBoxLayout(this);
+        lay->setContentsMargins(0, 0, 0, 0);
+        lay->setSpacing(4);
+
+        _cpuBar = new BarRenderer(this);
+        _cpuBar->setLabel("CPU");
+        _cpuBar->setColor(QColor(46, 204, 113));
+
+        _ramBar = new BarRenderer(this);
+        _ramBar->setLabel("RAM");
+        _ramBar->setColor(QColor(52, 152, 219));
+
+        _diskBar = new BarRenderer(this);
+        _diskBar->setLabel("DISK");
+        _diskBar->setColor(QColor(155, 89, 182));
+
+        _swapBar = new BarRenderer(this);
+        _swapBar->setLabel("SWAP");
+        _swapBar->setColor(QColor(231, 76, 60));
+
+        _netLabel = new QLabel("NET: ?", this);
+        _netLabel->setStyleSheet("color: #aaa; font-size: 10px;");
+
+        lay->addWidget(_cpuBar);
+        lay->addWidget(_ramBar);
+        lay->addWidget(_diskBar);
+        lay->addWidget(_swapBar);
+        lay->addWidget(_netLabel);
+    }
+
+    void updateData(const QJsonObject &data) override
+    {
+        _cpuBar->updateData(data);
+        _ramBar->updateData(data);
+        _diskBar->updateData(data);
+        _swapBar->updateData(data);
+        if (data.contains("net_rate"))
+            _netLabel->setText("NET: " + data["net_rate"].toString());
+    }
+
+private:
+    BarRenderer *_cpuBar, *_ramBar, *_diskBar, *_swapBar;
+    QLabel *_netLabel;
+};
+
+// --- Icon+Text renderer (weather, battery) ---
+class IconTextRenderer : public WidgetRenderer
+{
+    Q_OBJECT
+public:
+    explicit IconTextRenderer(QWidget *parent = nullptr) : WidgetRenderer(parent)
+    {
+        QHBoxLayout *lay = new QHBoxLayout(this);
+        lay->setContentsMargins(4, 2, 4, 2);
+        lay->setSpacing(6);
+
+        _iconLabel = new QLabel(this);
+        _iconLabel->setStyleSheet("font-size: 16px;");
+        _textLabel = new QLabel(this);
+        _textLabel->setStyleSheet("color: #ccc; font-size: 10px;");
+
+        lay->addWidget(_iconLabel);
+        lay->addWidget(_textLabel);
+        lay->addStretch();
+    }
+
+    void setIconChar(const QString &ch) { _iconLabel->setText(ch); }
+
+    void updateData(const QJsonObject &data) override
+    {
+        // Flexible: show first text-like value
+        QString text;
+        for (auto it = data.begin(); it != data.end(); ++it)
+        {
+            if (it.value().isString() && !it.value().toString().isEmpty())
+            {
+                text = it.value().toString();
+                break;
+            }
+        }
+        _textLabel->setText(text);
+    }
+
+private:
+    QLabel *_iconLabel;
+    QLabel *_textLabel;
+};
+
+// --- Main plugin class ---
 class NaraVisualsPlugin : public QObject, public ILXQtPanelPlugin
 {
     Q_OBJECT
@@ -59,18 +226,21 @@ public:
     QDialog *configureDialog() override;
 
 private slots:
-    void onProcessReadyRead();
-    void onProcessFinished(int exitCode, QProcess::ExitStatus status);
-    void startWidget();
-    void stopWidget();
+    void onDataUpdated(const QString &widgetId, const QString &jsonData);
+    void onRequestData();
 
 private:
     QWidget *mWidget = nullptr;
     QWidget *mContainer = nullptr;
-    QProcess *mProcess = nullptr;
+    QDBusInterface *mDBus = nullptr;
     QString mSelectedWidget;
-    QWindow *mEmbeddedWindow = nullptr;
+    WidgetRenderer *mRenderer = nullptr;
+    QTimer *mPollTimer = nullptr;
     bool mIsGeneric = false;
+
+    void startWidget();
+    void stopWidget();
+    WidgetRenderer *createRenderer(const QString &widgetId);
 };
 
 class NaraVisualsPluginLibrary : public QObject, public ILXQtPanelPluginLibrary
@@ -92,24 +262,31 @@ NaraVisualsPlugin::NaraVisualsPlugin(const ILXQtPanelPluginStartupInfo &info)
     : QObject(nullptr)
     , ILXQtPanelPlugin(info)
 {
-    QString detected = detectWidgetFromLibName();
-    mIsGeneric = detected.isEmpty();
-
-    if (mIsGeneric)
-        mSelectedWidget = settings()->value("widget", "system-monitor").toString();
-    else
-        mSelectedWidget = detected;
+    // Detect widget from library name (e.g. libnaravisuals-system-monitor.so)
+    QFileInfo fi(QString::fromLocal8Bit(dladdr ? "" : ""));
+    mSelectedWidget = settings()->value("widget", "system-monitor").toString();
+    mIsGeneric = settings()->value("generic", true).toBool();
 
     mContainer = new QWidget();
     QVBoxLayout *lay = new QVBoxLayout(mContainer);
     lay->setContentsMargins(0, 0, 0, 0);
-    QLabel *label = new QLabel("Starting...");
-    label->setAlignment(Qt::AlignCenter);
-    label->setStyleSheet("color: #888; font-size: 10px;");
-    lay->addWidget(label);
     mWidget = mContainer;
 
-    LXQt::Translator::translatePlugin(mSelectedWidget, QStringLiteral("naravisuals"));
+    // Connect to D-Bus daemon
+    mDBus = new QDBusInterface(BUS_NAME, OBJ_PATH, IFACE_NAME, QDBusConnection::sessionBus(), this);
+
+    if (mDBus->isValid())
+    {
+        // Subscribe to data updates
+        QDBusConnection::sessionBus().connect(
+            BUS_NAME, OBJ_PATH, IFACE_NAME, "dataUpdated",
+            this, SLOT(onDataUpdated(QString, QString)));
+    }
+
+    // Poll timer as fallback (D-Bus signals may not always work)
+    mPollTimer = new QTimer(this);
+    connect(mPollTimer, &QTimer::timeout, this, &NaraVisualsPlugin::requestData);
+    mPollTimer->start(2000);
 
     startWidget();
 }
@@ -171,117 +348,71 @@ QDialog *NaraVisualsPlugin::configureDialog()
 
 void NaraVisualsPlugin::startWidget()
 {
-    if (mProcess)
+    if (mRenderer)
         return;
 
-    if (mSelectedWidget.isEmpty() || !allWidgets().contains(mSelectedWidget))
+    mRenderer = createRenderer(mSelectedWidget);
+    if (!mRenderer)
     {
-        qWarning("NaraVisuals: No valid widget selected");
-        return;
-    }
-
-    QStringList env = QProcess::systemEnvironment();
-    QString home = QDir::homePath();
-    env << QString("PYTHONPATH=%1/.local/bin/naravisuals:%2/.local/lib/python3.14/site-packages").arg(home).arg(home);
-
-    mProcess = new QProcess(this);
-    mProcess->setEnvironment(env);
-    mProcess->setProcessChannelMode(QProcess::MergedChannels);
-
-    connect(mProcess, &QProcess::readyReadStandardOutput,
-            this, &NaraVisualsPlugin::onProcessReadyRead);
-    connect(mProcess,
-            QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, &NaraVisualsPlugin::onProcessFinished);
-
-    mProcess->start("python3", {
-        "-m", "naravisuals.widgets", mSelectedWidget, "--embed"
-    });
-
-    if (!mProcess->waitForStarted(3000))
-    {
-        qWarning("NaraVisuals: Failed to start Python process");
-        QLabel *err = new QLabel("Failed to start");
+        QLabel *err = new QLabel("No renderer for: " + mSelectedWidget, mContainer);
         err->setStyleSheet("color: red; font-size: 9px;");
         mContainer->layout()->addWidget(err);
         return;
     }
+
+    mContainer->layout()->addWidget(mRenderer);
+
+    // Initial data request
+    requestData();
 }
 
 void NaraVisualsPlugin::stopWidget()
 {
-    if (mEmbeddedWindow)
+    mPollTimer->stop();
+    if (mRenderer)
     {
-        QLayout *lay = mContainer->layout();
-        if (lay)
-        {
-            QLayoutItem *item;
-            while ((item = lay->takeAt(0)))
-            {
-                if (item->widget()) item->widget()->deleteLater();
-                delete item;
-            }
-        }
-        mEmbeddedWindow->destroy();
-        delete mEmbeddedWindow;
-        mEmbeddedWindow = nullptr;
-    }
-    if (mProcess)
-    {
-        mProcess->kill();
-        mProcess->waitForFinished(2000);
-        delete mProcess;
-        mProcess = nullptr;
+        mContainer->layout()->removeWidget(mRenderer);
+        mRenderer->deleteLater();
+        mRenderer = nullptr;
     }
 }
 
-void NaraVisualsPlugin::onProcessReadyRead()
+WidgetRenderer *NaraVisualsPlugin::createRenderer(const QString &widgetId)
 {
-    QByteArray data = mProcess->readAllStandardOutput();
-    QString output = QString::fromUtf8(data).trimmed();
-    qDebug() << "NaraVisuals:" << output;
-
-    if (!output.contains("WID:"))
-        return;
-
-    int start = output.indexOf("WID:") + 4;
-    int end = output.indexOf('\n', start);
-    if (end < 0) end = output.length();
-    QString widStr = output.mid(start, end - start).trimmed();
-    bool ok = false;
-    WId wid = widStr.toULongLong(&ok, 16);
-    if (!ok || !wid)
-        return;
-
-    qDebug() << "NaraVisuals: Embedding WId" << widStr;
-
-    QLayout *lay = mContainer->layout();
-    QLayoutItem *item;
-    while ((item = lay->takeAt(0)))
+    if (widgetId == "system-monitor")
+        return new SystemMonitorRenderer(mContainer);
+    if (widgetId == "weather" || widgetId == "battery")
     {
-        if (item->widget()) item->widget()->deleteLater();
-        delete item;
+        auto *r = new IconTextRenderer(mContainer);
+        r->setIconChar(widgetId == "weather" ? "\u2601" : "\U0001F50B");
+        return r;
     }
-
-    mEmbeddedWindow = QWindow::fromWinId(wid);
-    if (!mEmbeddedWindow)
-    {
-        QLabel *err = new QLabel("Embed failed");
-        err->setStyleSheet("color: red; font-size: 9px;");
-        lay->addWidget(err);
-        return;
-    }
-
-    QWidget *embedded = QWidget::createWindowContainer(mEmbeddedWindow);
-    embedded->setMinimumSize(16, 16);
-    lay->addWidget(embedded);
+    // Default: text renderer for all others
+    return new TextRenderer(mContainer);
 }
 
-void NaraVisualsPlugin::onProcessFinished(int exitCode, QProcess::ExitStatus status)
+void NaraVisualsPlugin::requestData()
 {
-    qDebug() << "NaraVisuals: Process exited" << exitCode << status;
-    if (status == QProcess::CrashExit)
-        QTimer::singleShot(2000, this, &NaraVisualsPlugin::startWidget);
+    if (!mDBus || !mDBus->isValid())
+        return;
+
+    QDBusReply<QString> reply = mDBus->call("GetData", mSelectedWidget);
+    if (!reply.isValid())
+        return;
+
+    QJsonDocument doc = QJsonDocument::fromJson(reply.value().toUtf8());
+    if (doc.isObject())
+        onDataUpdated(mSelectedWidget, reply.value());
+}
+
+void NaraVisualsPlugin::onDataUpdated(const QString &widgetId, const QString &jsonData)
+{
+    if (widgetId != mSelectedWidget || !mRenderer)
+        return;
+
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData.toUtf8());
+    if (doc.isObject())
+        mRenderer->updateData(doc.object());
 }
 
 #include "naravisuals-plugin.moc"

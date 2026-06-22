@@ -4,6 +4,7 @@ import configparser
 import subprocess
 import importlib
 import shutil
+from datetime import datetime
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QPushButton, QListWidget, QStackedWidget, QLabel, QLineEdit, 
@@ -27,6 +28,9 @@ WIDGETS = [
     ("ping_monitor", "Ping Monitor", "naravisuals.widgets.system.ping_monitor", "PingMonitor"),
     ("system_updates", "System Updates", "naravisuals.widgets.integrations.system_updates", "SystemUpdates"),
     ("kernel_version", "Kernel Version", "naravisuals.widgets.system.kernel_version", "KernelVersion"),
+    ("todo_list", "Todo List", "naravisuals.data_providers.todo", "TodoListProvider"),
+    ("currency", "Currency Exchange", "naravisuals.data_providers.financial", "CurrencyProvider"),
+    ("crypto", "Crypto Prices", "naravisuals.data_providers.financial", "CryptoProvider"),
     # Native Replacements
     ("clock", "Native: Clock & Calendar", "naravisuals.widgets.native.clock", "ClockWidget"),
     ("app_menu", "Native: App Menu", "naravisuals.widgets.native.app_menu", "AppMenuWidget"),
@@ -34,6 +38,7 @@ WIDGETS = [
     ("pager", "Native: Desktop Pager", "naravisuals.widgets.native.pager", "DesktopPagerWidget"),
     ("taskbar", "Native: Taskbar", "naravisuals.widgets.native.taskbar", "TaskbarWidget"),
     ("system_tray", "Native: System Tray", "naravisuals.widgets.native.system_tray", "SystemTrayWidget"),
+    ("ntfs_mount", "NTFS Mount", "naravisuals.widgets.system.ntfs_mount", "NtfsMountWidget"),
 ]
 
 class LXQtPanelConfigPage(QWidget):
@@ -77,6 +82,10 @@ class LXQtPanelConfigPage(QWidget):
         export_btn = QPushButton("📤 Export Template")
         export_btn.clicked.connect(self.export_template)
         top_row.addWidget(export_btn)
+        
+        reset_btn = QPushButton("🔄 Reset to Stock")
+        reset_btn.clicked.connect(self.reset_to_stock)
+        top_row.addWidget(reset_btn)
         
         self.layout.addLayout(top_row)
         
@@ -275,6 +284,59 @@ class LXQtPanelConfigPage(QWidget):
             shutil.copyfile(self.config_path, file_path)
             QMessageBox.information(self, "Exported", f"Template successfully exported to:\n{file_path}")
 
+    def reset_to_stock(self):
+        reply = QMessageBox.question(
+            self,
+            "Reset Panel to Stock",
+            "This will reset your LXQt panel to the default configuration\n"
+            "(without NaraVisuals widgets).\n\n"
+            "A backup of your current configuration will be saved.\n\n"
+            "Do you want to continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            # Save backup first
+            backup_dir = os.path.expanduser("~/.config/lxqt/panel-backups")
+            os.makedirs(backup_dir, exist_ok=True)
+            backup_file = os.path.join(backup_dir, f"panel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.conf")
+            shutil.copyfile(self.config_path, backup_file)
+            
+            # Load stock config
+            stock_config = os.path.join(os.path.dirname(__file__), "..", "..", "..", "packaging", "stock-panel.conf")
+            if not os.path.exists(stock_config):
+                # Try system install location
+                stock_config = os.path.expanduser("~/.local/share/naravisuals/stock-panel.conf")
+            
+            if os.path.exists(stock_config):
+                shutil.copyfile(stock_config, self.config_path)
+                self.parser.read(self.config_path)
+                
+                # Update panel list
+                self.panels = []
+                if "general" in self.parser and "panels" in self.parser["general"]:
+                    self.panels = [p.strip() for p in self.parser["general"]["panels"].split(",") if p.strip()]
+                if not self.panels:
+                    self.panels = [s for s in self.parser.sections() if s.startswith("panel")]
+                if not self.panels:
+                    self.panels = ["panel1"]
+                
+                self.panel_selector.blockSignals(True)
+                self.panel_selector.clear()
+                self.panel_selector.addItems(self.panels)
+                self.panel_selector.blockSignals(False)
+                
+                self.load_panel_layout(self.panel_selector.currentText())
+                subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True)
+                QMessageBox.information(self, "Reset Complete", 
+                    f"Panel reset to stock configuration.\n\n"
+                    f"Backup saved to:\n{backup_file}")
+            else:
+                QMessageBox.critical(self, "Error", 
+                    "Stock configuration file not found.\n"
+                    "Please reinstall NaraVisuals to restore the stock config.")
+
 class WidgetConfigPage(QWidget):
     def __init__(self, w_id, name, mod_path, cls_name, launcher_cb):
         super().__init__()
@@ -354,11 +416,89 @@ class WidgetConfigPage(QWidget):
                 config.set(self.w_id, key, field.value())
         QMessageBox.information(self, "Settings Saved", f"{self.name} settings saved successfully.")
 
+class ThemePreviewPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QVBoxLayout(self)
+
+        header = QLabel("<h2>Theme Preview</h2>")
+        self.layout.addWidget(header)
+
+        from naravisuals.core.theme_engine import theme
+
+        # Color preview grid
+        preview_layout = QFormLayout()
+
+        self.bg_color = QColorLineEdit(theme.colors.background)
+        preview_layout.addRow("Background:", self.bg_color)
+
+        self.fg_color = QColorLineEdit(theme.colors.foreground)
+        preview_layout.addRow("Foreground:", self.fg_color)
+
+        self.accent_color = QColorLineEdit(theme.colors.accent)
+        preview_layout.addRow("Accent:", self.accent_color)
+
+        self.layout.addLayout(preview_layout)
+
+        # Preview widget
+        preview_frame = QFrame()
+        preview_frame.setFrameShape(QFrame.Shape.Box)
+        preview_frame.setMinimumHeight(100)
+        preview_frame.setStyleSheet(f"""
+            background-color: {theme.colors.background};
+            color: {theme.colors.foreground};
+            border: 2px solid {theme.colors.border};
+            padding: 10px;
+        """)
+        preview_label = QLabel("Preview Text - System Monitor Widget")
+        preview_label.setStyleSheet(f"color: {theme.colors.text_primary};")
+        preview_frame_layout = QVBoxLayout(preview_frame)
+        preview_frame_layout.addWidget(preview_label)
+        self.layout.addWidget(preview_frame)
+
+        # Action buttons
+        btn_layout = QHBoxLayout()
+        apply_btn = QPushButton("Apply Theme")
+        apply_btn.clicked.connect(self._apply_theme)
+        btn_layout.addWidget(apply_btn)
+
+        reset_btn = QPushButton("Reset to System")
+        reset_btn.clicked.connect(self._reset_theme)
+        btn_layout.addWidget(reset_btn)
+
+        self.layout.addLayout(btn_layout)
+        self.layout.addStretch()
+
+    def _apply_theme(self):
+        from naravisuals.core.theme_engine import theme
+        theme.set_custom_color("background", self.bg_color.text())
+        theme.set_custom_color("foreground", self.fg_color.text())
+        theme.set_custom_color("accent", self.accent_color.text())
+        theme.update_from_palette()
+        QMessageBox.information(self, "Theme Applied", "Theme colors updated successfully.")
+
+    def _reset_theme(self):
+        from naravisuals.core.theme_engine import theme
+        theme._custom_colors.clear()
+        theme.save_custom_colors()
+        theme.update_from_palette()
+        self.bg_color.setText(theme.colors.background)
+        self.fg_color.setText(theme.colors.foreground)
+        self.accent_color.setText(theme.colors.accent)
+        QMessageBox.information(self, "Theme Reset", "Theme reset to system defaults.")
+
+
+class QColorLineEdit(QLineEdit):
+    def __init__(self, color: str = "#ffffff"):
+        super().__init__(color)
+        self.setPlaceholderText("#rrggbb")
+
+
 class ManagerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("NaraVisuals Settings Hub")
-        self.setGeometry(100, 100, 750, 550)
+        self.setGeometry(100, 100, 800, 600)
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -373,11 +513,15 @@ class ManagerWindow(QMainWindow):
         self.sidebar.setFixedWidth(200)
         sidebar_layout.addWidget(self.sidebar)
         
-        reload_btn = QPushButton("🔄 Reload Panel")
+        reload_btn = QPushButton("Reload Panel")
         reload_btn.clicked.connect(lambda: subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True))
         sidebar_layout.addWidget(reload_btn)
         
-        exit_btn = QPushButton("❌ Exit Hub")
+        reset_btn = QPushButton("Reset to Stock")
+        reset_btn.clicked.connect(self._reset_panel_to_stock)
+        sidebar_layout.addWidget(reset_btn)
+        
+        exit_btn = QPushButton("Exit Hub")
         exit_btn.clicked.connect(self.close)
         sidebar_layout.addWidget(exit_btn)
         
@@ -386,9 +530,14 @@ class ManagerWindow(QMainWindow):
         self.pages = QStackedWidget()
         main_layout.addWidget(self.pages)
         
-        self.sidebar.addItem("⚙️ Panel Organizer")
+        # Add pages
+        self.sidebar.addItem("Panel Organizer")
         lxqt_page = LXQtPanelConfigPage()
         self.pages.addWidget(lxqt_page)
+
+        self.sidebar.addItem("Theme Preview")
+        theme_page = ThemePreviewPage()
+        self.pages.addWidget(theme_page)
         
         for w_id, name, mod_path, cls_name in WIDGETS:
             self.sidebar.addItem(name)
@@ -416,6 +565,42 @@ class ManagerWindow(QMainWindow):
             self._running_widgets[w_id] = w
         except Exception as e:
             QMessageBox.critical(self, "Launch Error", f"Failed to launch {name}:\n{str(e)}")
+
+    def _reset_panel_to_stock(self):
+        reply = QMessageBox.question(
+            self,
+            "Reset Panel to Stock",
+            "This will reset your LXQt panel to the default configuration\n"
+            "(without NaraVisuals widgets).\n\n"
+            "A backup of your current configuration will be saved.\n\n"
+            "Do you want to continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            config_path = os.path.expanduser("~/.config/lxqt/panel.conf")
+            backup_dir = os.path.expanduser("~/.config/lxqt/panel-backups")
+            os.makedirs(backup_dir, exist_ok=True)
+            backup_file = os.path.join(backup_dir, f"panel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.conf")
+            
+            if os.path.exists(config_path):
+                shutil.copyfile(config_path, backup_file)
+            
+            stock_config = os.path.join(os.path.dirname(__file__), "..", "..", "..", "packaging", "stock-panel.conf")
+            if not os.path.exists(stock_config):
+                stock_config = os.path.expanduser("~/.local/share/naravisuals/stock-panel.conf")
+            
+            if os.path.exists(stock_config):
+                shutil.copyfile(stock_config, config_path)
+                subprocess.Popen("killall lxqt-panel; lxqt-panel &", shell=True)
+                QMessageBox.information(self, "Reset Complete", 
+                    f"Panel reset to stock configuration.\n\n"
+                    f"Backup saved to:\n{backup_file}")
+            else:
+                QMessageBox.critical(self, "Error", 
+                    "Stock configuration file not found.\n"
+                    "Please reinstall NaraVisuals to restore the stock config.")
 
 def main():
     app = QApplication(sys.argv)

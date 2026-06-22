@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+STOCK_CONFIG="${SCRIPT_DIR}/../packaging/stock-panel.conf"
+LXQT_CONFIG="${HOME}/.config/lxqt"
+PANEL_CONFIG="${LXQT_CONFIG}/panel.conf"
+BACKUP_DIR="${LXQT_CONFIG}/panel-backups"
+
+usage() {
+    cat << EOF
+NaraVisuals LXQt Panel Reset Tool
+
+Usage: $(basename "$0") [OPTIONS]
+
+Options:
+  --stock         Reset to stock LXQt panel configuration (no NaraVisuals widgets)
+  --backup        Reset to last backup (before NaraVisuals was installed)
+  --save-backup   Save current config as backup before resetting
+  --dry-run       Show what would be changed without modifying files
+  --help          Show this help message
+
+Examples:
+  $(basename "$0") --stock              # Reset to stock LXQt panel
+  $(basename "$0") --backup             # Restore from last backup
+  $(basename "$0") --save-backup --stock # Backup first, then reset to stock
+  $(basename "$0") --dry-run --stock    # Preview changes without applying
+
+EOF
+    exit 0
+}
+
+log_info() {
+    echo -e "\033[0;32m[INFO]\033[0m $1"
+}
+
+log_warn() {
+    echo -e "\033[0;33m[WARN]\033[0m $1"
+}
+
+log_error() {
+    echo -e "\033[0;31m[ERROR]\033[0m $1"
+}
+
+save_backup() {
+    if [ -f "$PANEL_CONFIG" ]; then
+        mkdir -p "$BACKUP_DIR"
+        backup_file="${BACKUP_DIR}/panel_$(date +%Y%m%d_%H%M%S).conf"
+        cp "$PANEL_CONFIG" "$backup_file"
+        log_info "Current config backed up to: $backup_file"
+        return 0
+    else
+        log_warn "No existing panel.conf found to backup"
+        return 1
+    fi
+}
+
+restore_backup() {
+    local latest_backup=$(ls -t "$BACKUP_DIR"/panel_*.conf 2>/dev/null | head -1)
+    
+    if [ -z "$latest_backup" ]; then
+        log_error "No backups found in $BACKUP_DIR"
+        exit 1
+    fi
+    
+    log_info "Restoring from backup: $latest_backup"
+    cp "$latest_backup" "$PANEL_CONFIG"
+    restart_panel
+}
+
+reset_to_stock() {
+    if [ ! -f "$STOCK_CONFIG" ]; then
+        log_error "Stock configuration not found: $STOCK_CONFIG"
+        exit 1
+    fi
+    
+    log_info "Resetting to stock LXQt panel configuration..."
+    cp "$STOCK_CONFIG" "$PANEL_CONFIG"
+    restart_panel
+}
+
+restart_panel() {
+    log_info "Restarting lxqt-panel..."
+    if pgrep -x "lxqt-panel" > /dev/null; then
+        killall lxqt-panel 2>/dev/null || true
+        sleep 1
+    fi
+    lxqt-panel &
+    log_info "Panel restarted"
+}
+
+dry_run_stock() {
+    echo "=== Dry Run: Reset to Stock Configuration ==="
+    echo ""
+    echo "Would replace: $PANEL_CONFIG"
+    echo "With: $STOCK_CONFIG"
+    echo ""
+    echo "Stock configuration contains:"
+    if [ -f "$STOCK_CONFIG" ]; then
+        grep "^plugins=" "$STOCK_CONFIG" | head -1 | sed 's/plugins=/  Plugins: /'
+        echo "  (No NaraVisuals widgets)"
+    fi
+    echo ""
+    echo "Run without --dry-run to apply changes."
+}
+
+# Parse arguments
+ACTION=""
+DRY_RUN=false
+SAVE_BACKUP=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --stock)
+            ACTION="stock"
+            shift
+            ;;
+        --backup)
+            ACTION="backup"
+            shift
+            ;;
+        --save-backup)
+            SAVE_BACKUP=true
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --help|-h)
+            usage
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            usage
+            ;;
+    esac
+done
+
+if [ -z "$ACTION" ]; then
+    log_error "No action specified"
+    usage
+fi
+
+# Ensure config directory exists
+mkdir -p "$LXQT_CONFIG"
+
+# Execute action
+case $ACTION in
+    stock)
+        if [ "$DRY_RUN" = true ]; then
+            dry_run_stock
+        else
+            if [ "$SAVE_BACKUP" = true ]; then
+                save_backup
+            fi
+            reset_to_stock
+        fi
+        ;;
+    backup)
+        if [ "$DRY_RUN" = true ]; then
+            echo "=== Dry Run: Restore from Backup ==="
+            echo ""
+            latest_backup=$(ls -t "$BACKUP_DIR"/panel_*.conf 2>/dev/null | head -1)
+            if [ -z "$latest_backup" ]; then
+                echo "No backups found"
+            else
+                echo "Would restore from: $latest_backup"
+            fi
+        else
+            restore_backup
+        fi
+        ;;
+esac

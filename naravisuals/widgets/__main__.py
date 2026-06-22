@@ -3,6 +3,7 @@ from naravisuals.widgets import (
     SystemMonitor, WeatherWidget, QuickNotes, ClipboardManager,
     PomodoroTimer, NetworkMonitor, TrayEnhanced, MediaPlayerController, BatteryInfo
 )
+from naravisuals.widgets.system.ntfs_mount import NtfsMountWidget
 
 WIDGET_MAP = {
     "system-monitor": SystemMonitor,
@@ -14,6 +15,7 @@ WIDGET_MAP = {
     "tray-enhanced": TrayEnhanced,
     "media-player": MediaPlayerController,
     "battery": BatteryInfo,
+    "ntfs-mount": NtfsMountWidget,
 }
 
 if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):

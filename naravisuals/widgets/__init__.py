@@ -2,3 +2,18 @@ from . import system
 from . import productivity
 from . import integrations
 from . import native
+
+from .system.system_monitor import SystemMonitor
+from .system.network_monitor import NetworkMonitor
+from .system.battery import BatteryInfo
+from .system.uptime import UptimeWidget
+from .system.ping_monitor import PingMonitor
+from .system.kernel_version import KernelVersion
+from .system.ntfs_mount import NtfsMountWidget
+from .integrations.weather import WeatherWidget
+from .integrations.tray_enhanced import TrayEnhanced
+from .integrations.media_player import MediaPlayerController
+from .integrations.system_updates import SystemUpdates
+from .productivity.pomodoro import PomodoroTimer
+from .productivity.quick_notes import QuickNotes
+from .productivity.clipboard_manager import ClipboardManager

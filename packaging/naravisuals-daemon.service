@@ -1,0 +1,13 @@
+[Unit]
+Description=NaraVisuals LXQt Widgets Daemon
+After=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=org.naravisuals.Daemon
+ExecStart=/usr/bin/python3 -m naravisuals.daemon
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

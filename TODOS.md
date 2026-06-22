@@ -1,37 +1,86 @@
-# NaraVisuals LXQt Widgets - Future Roadmap & TODOs
+# NaraVisuals LXQt Widgets - Roadmap
 
-This document outlines the planned improvements and future architectural changes for the project.
+## Phase 1: Wayland-Ready Architecture (Critical)
 
-## 1. Wayland Compatibility & IPC Transition 🚨 (High Priority)
-* [ ] **Investigate Wayland embedding limitations:** Research how LXQt handles panel plugins under Wayland (since X11 `WId` embedding via `QWindow::fromWinId` will fail).
-* [ ] **Migrate to D-Bus IPC:** Instead of embedding Python UI windows directly into the C++ panel plugin, transition to a model where:
-    * The C++ plugin renders the actual UI inside the panel.
-    * The Python script acts as a backend data provider, sending UI updates and data via D-Bus.
-* [ ] **Layer Shell alternative:** If Python UI rendering is strictly required, explore the `wlr-layer-shell` protocol for Wayland to draw native floating overlays over the panel.
+> Make the project work on Wayland via D-Bus IPC and single daemon.
 
-## 2. Process Optimization (Single Daemon Architecture) 🚀
-* [ ] **Create `naravisuals-daemon`:** Write a centralized background Python service that starts on login.
-* [ ] **Modify Widget Logic:** Update individual widgets (`system_monitor`, `weather`, etc.) to run as modules inside the single daemon rather than standalone processes.
-* [ ] **Update C++ Plugin (`naravisuals-plugin.cpp`):**
-    * Remove `QProcess` spawning for every widget instance.
-    * Replace with local socket or D-Bus communication to request the daemon to render/provide data for the specified widget.
-* [ ] **Memory Profiling:** Ensure the new daemon uses significantly less RAM/CPU compared to spawning 5+ independent PyQt6 interpreters.
+### 1.1 D-Bus IPC Daemon
+- [x] Create `naravisuals/daemon/__main__.py` with D-Bus service at `org.naravisuals.Daemon`
+- [x] Implement widget data providers (system, weather, productivity, integrations)
+- [x] Add D-Bus interface: `GetData(widget_id)`, `DataUpdated` signal
+- [x] Create systemd user service file
+- [ ] Add data caching layer to avoid redundant system calls
 
-## 3. Dynamic Theming & Panel Integration 🎨
-* [ ] **Read Panel Context:** Modify the C++ plugin to pass current panel properties (height, width, orientation: horizontal/vertical) to the Python widgets.
-* [x] **Theme Inheritance:** Read the current LXQt `QPalette` (system colors) and apply them to the PyQt6 widgets so they seamlessly blend with light/dark themes.
-* [ ] **Responsive Resizing:** Ensure Python widgets dynamically adjust their layouts when the user resizes the LXQt panel.
+### 1.2 C++ Plugin Refactoring
+- [x] Remove `QProcess` spawning from `naravisuals-plugin.cpp`
+- [x] Add D-Bus client to request widget data from daemon
+- [x] Implement C++ renderers (Text, Bar, Graph, IconText)
+- [ ] Handle D-Bus disconnection/reconnection
 
-## 4. Advanced Configuration UI ⚙️
-* [x] **Expand `naravisuals-manager`:** Transform the manager from a simple launcher into a full-fledged Settings Hub.
-* [x] **Widget Settings Tabs:** Create configuration pages for specific widgets:
-    * *Weather:* Location/ZIP code, Celsius/Fahrenheit toggle.
-    * *Pomodoro:* Work/Break duration sliders.
-    * *Network:* Interface selection dropdown (e.g., `eth0`, `wlan0`).
-* [x] **Configuration Storage:** Implement saving/loading settings in standard Linux paths (`~/.config/naravisuals/config.json` or `.ini`).
+### 1.3 Widget Data Providers
+- [x] `naravisuals/data_providers/system.py` - CPU, RAM, disk, network
+- [x] `naravisuals/data_providers/weather.py` - Weather API
+- [x] `naravisuals/data_providers/productivity.py` - Pomodoro, clipboard
+- [x] `naravisuals/data_providers/integrations.py` - MPRIS, updates
 
-## 5. Proper Packaging & Distribution 📦
-* [x] **Remove Hardcoded Paths:** Refactor `install.sh` to avoid hardcoding `~/.local/` to allow for system-wide installations (`/usr/local/` or `/usr/`).
-* [ ] **Debian Package (`.deb`):** Create a proper `debian/` directory with rules to build a standard `.deb` package.
-* [x] **Arch Linux AUR:** Write a `PKGBUILD` script for easy installation on Arch-based systems.
-* [x] **PyPI Release:** Update `setup.py` to ensure it works flawlessly when installed via `pip install naravisuals-lxqt-widgets` with appropriate entry points.
+### 1.4 Testing & Validation
+- [ ] Labwc integration tests
+- [ ] Memory profiling (target: <80MB for 10 widgets)
+- [ ] D-Bus latency tests (target: <10ms)
+
+---
+
+## Phase 2: Polish & Ecosystem (Medium)
+
+> Enhance UX, add widgets, improve packaging and community.
+
+### 2.1 Theming & Responsiveness
+- [x] Panel context integration (height, width, orientation)
+- [x] Dark/light mode auto-detection
+- [x] Responsive layouts for different panel sizes
+- [ ] Animation system for value changes
+
+### 2.2 Widget Enhancements
+- [x] SystemMonitor: per-core CPU, temperature sensors
+- [x] NetworkMonitor: interface selector, separate up/down graphs
+- [ ] BatteryInfo: time remaining, health percentage
+- [ ] Weather: multiple locations, forecast display
+- [ ] MediaPlayer: album art, playlist browser
+- [x] New widgets: TodoList, Currency, Crypto
+
+### 2.3 Manager & Configuration
+- [ ] Widget browser tab (install/uninstall)
+- [x] Theme preview and apply
+- [x] Export/import settings
+- [x] Reset panel to stock configuration
+- [ ] Configuration profiles
+
+### 2.4 Packaging & Distribution
+- [x] Debian/Ubuntu .deb package
+- [x] Fedora/RHEL .rpm package
+- [x] Flatpak manifest
+- [x] Improve PyPI with pyproject.toml
+
+### 2.5 Testing & Documentation
+- [x] Unit tests for core modules
+- [x] Integration tests for D-Bus
+- [ ] API documentation (Sphinx + Doxygen)
+- [x] User installation guides
+- [ ] Widget development tutorial
+
+### 2.6 Community
+- [ ] Submit to awesome-labwc-lxqt
+- [ ] Create project website (GitHub Pages)
+- [ ] LXQt official plugin submission
+- [ ] Widget marketplace concept
+
+---
+
+## Milestones
+
+| Version | Target | Deliverables |
+|---------|--------|--------------|
+| **v2.0** | Q3 2026 | D-Bus daemon, C++ refactored, Labwc working |
+| **v2.1** | Q4 2026 | Theming, new widgets, performance validated |
+| **v2.2** | Q1 2027 | Manager redesign, packages, documentation |
+| **v3.0** | Q2 2027 | LXQt official, marketplace, ecosystem |

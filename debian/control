@@ -1,0 +1,35 @@
+Source: naravisuals-lxqt-widgets
+Section: utils
+Priority: optional
+Maintainer: NaraVisuals <naranyala@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13),
+               cmake,
+               lxqt-build-tools,
+               python3-all,
+               python3-setuptools,
+               python3-pyqt6,
+               python3-psutil,
+               python3-requests,
+               python3-dbus,
+               python3-notify2
+Standards-Version: 4.6.0
+Homepage: https://github.com/naranyala/naravisuals-lxqt-widgets
+
+Package: naravisuals-lxqt-widgets
+Architecture: all
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         python3-pyqt6,
+         python3-psutil,
+         python3-requests,
+         python3-dbus,
+         python3-notify2,
+         lxqt-panel
+Description: Advanced panel widgets for LXQt desktop environment
+ NaraVisuals provides advanced customization and extended functionality
+ to the lightweight LXQt desktop. It integrates a native C++ panel plugin
+ with a feature-rich Python/PyQt6 daemon, allowing complex UI elements
+ to be embedded directly into the LXQt panel.
+ .
+ Features include system monitoring, weather widgets, productivity tools,
+ clipboard management, and more.

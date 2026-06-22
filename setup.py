@@ -15,7 +15,10 @@ setup(
     python_requires=">=3.10",
     entry_points={
         "console_scripts": [
-            "naravisuals-manager=naravisuals.manager.app:main",
+            "naravisuals-manager=naravisuals.manager.control_center:main",
+            "naravisuals-manager-legacy=naravisuals.manager.app:main",
+            "naravisuals-daemon=naravisuals.daemon.__main__:main",
+            "naravisuals-sddm-manager=naravisuals.sddm_manager.app:main",
             "naravisuals-widget=naravisuals.widgets.__main__:main",
         ]
     },

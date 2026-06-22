@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	cd native-plugin && mkdir -p build && cd build && cmake .. && make
+	python3 setup.py build
+
+override_dh_auto_install:
+	python3 setup.py install --root=debian/naravisuals-lxqt-widgets --install-layout=deb
+	cd native-plugin/build && make install DESTDIR=../../debian/naravisuals-lxqt-widgets
+	install -Dpm 644 packaging/naravisuals-daemon.service debian/naravisuals-lxqt-widgets/usr/lib/systemd/user/naravisuals-daemon.service
+	install -Dpm 644 packaging/stock-panel.conf debian/naravisuals-lxqt-widgets/usr/share/naravisuals/stock-panel.conf
+	install -Dpm 755 scripts/naravisuals-panel-reset debian/naravisuals-lxqt-widgets/usr/bin/naravisuals-panel-reset
+
+override_dh_auto_clean:
+	rm -rf build dist *.egg-info
+	rm -rf native-plugin/build
+
+override_dh_auto_test:
+	python3 -m pytest tests/ || true

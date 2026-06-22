@@ -1,0 +1,30 @@
+app-id: org.naravisuals.lxqt-widgets
+runtime: org.kde.Platform
+runtime-version: '6.6'
+sdk: org.kde.Sdk
+command: naravisuals-manager
+
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=session-bus
+  - --system-talk-name=org.freedesktop.login1
+  - --talk-name=org.naravisuals.Daemon
+  - --env=QT_QPA_PLATFORM=wayland
+
+modules:
+  - name: naravisuals-lxqt-widgets
+    buildsystem: simple
+    build-commands:
+      - python3 setup.py install --prefix=/app --root=_build
+      - install -Dpm 644 packaging/naravisuals-daemon.service /app/share/systemd/user/naravisuals-daemon.service
+      - install -Dpm 644 packaging/stock-panel.conf /app/share/naravisuals/stock-panel.conf
+      - install -Dpm 755 scripts/naravisuals-panel-reset /app/bin/naravisuals-panel-reset
+    sources:
+      - type: dir
+        path: ..
+    cleanup:
+      - /__pycache__
+      - '*.pyc'
+      - /native-plugin/build

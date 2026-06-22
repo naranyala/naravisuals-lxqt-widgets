@@ -2,7 +2,9 @@ import sys
 
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QAction, QIcon
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMenu
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QApplication, QMenu
+
+from naravisuals.core.theme_engine import theme
 
 
 class PanelWidget(QWidget):
@@ -14,8 +16,9 @@ class PanelWidget(QWidget):
         self._timer.timeout.connect(self._on_tick)
         self._interval = 1000
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(2, 2, 2, 2)
-        self._layout.setSpacing(2)
+        margins = theme.get_margins()
+        self._layout.setContentsMargins(*margins)
+        self._layout.setSpacing(theme.get_spacing())
         self.setLayout(self._layout)
         self._menu = None
         self._actions = []
@@ -24,6 +27,7 @@ class PanelWidget(QWidget):
         self._interval = max(100, ms)
 
     def start(self):
+        self._apply_theme()
         self._on_tick()
         if self._interval > 0:
             self._timer.start(self._interval)
@@ -33,6 +37,11 @@ class PanelWidget(QWidget):
 
     def _on_tick(self):
         pass
+
+    def _apply_theme(self):
+        """Apply current theme to widget."""
+        theme.update_from_palette()
+        self.setStyleSheet(theme.get_stylesheet())
 
     def add_action(self, text: str, callback, icon=None):
         action = QAction(text, self)
@@ -81,13 +90,11 @@ class PanelWidget(QWidget):
                 | Qt.WindowType.Tool
             )
             w.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
-            
-            # Apply dynamic theming from QPalette instead of hardcoded colors
-            palette = app.palette()
-            bg_color = palette.color(palette.ColorRole.Window).name()
-            border_color = palette.color(palette.ColorRole.WindowText).name()
-            w.setStyleSheet(f"background-color: {bg_color}; border: 1px solid {border_color};")
 
+            # Update theme from palette
+            theme.update_from_palette()
+
+            # Parse position and size
             try:
                 idx = args.index("--position") if "--position" in args else args.index("-pos")
                 pos = args[idx + 1]
@@ -101,6 +108,13 @@ class PanelWidget(QWidget):
                 idx = args.index("--width") if "--width" in args else args.index("-w")
                 width = int(args[idx + 1])
                 w.setFixedWidth(width)
+            except (ValueError, IndexError):
+                pass
+
+            try:
+                idx = args.index("--height") if "--height" in args else args.index("-h")
+                height = int(args[idx + 1])
+                w.setFixedHeight(height)
             except (ValueError, IndexError):
                 pass
 
