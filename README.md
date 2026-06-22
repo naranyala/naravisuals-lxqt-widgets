@@ -1,80 +1,73 @@
-<div align="center">
-  <h1>🌌 NaraVisuals LXQt Widgets</h1>
-  <p><strong>Next-Generation, API-Driven Panel Widgets for the LXQt Desktop Environment</strong></p>
-  
-  [![License: GPL3](https://img.shields.io/badge/License-GPL3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
-  [![Python](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://python.org)
-  [![PyQt6](https://img.shields.io/badge/GUI-PyQt6-yellow.svg)](https://riverbankcomputing.com/software/pyqt/)
-</div>
+# NaraVisuals LXQt Widgets
 
-<br />
+Next-Generation, API-Driven Panel Widgets for the LXQt Desktop Environment.
 
-> **NaraVisuals** brings unprecedented power, customization, and aesthetic flair to the lightweight LXQt desktop. By bridging a blazing-fast C++ native panel plugin with a feature-rich Python/PyQt6 daemon, it allows you to embed complex UI elements directly into your LXQt panel—without sacrificing performance.
+[![License: GPL3](https://img.shields.io/badge/License-GPL3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://python.org)
+[![PyQt6](https://img.shields.io/badge/GUI-PyQt6-yellow.svg)](https://riverbankcomputing.com/software/pyqt/)
 
-## ✨ Why NaraVisuals?
+NaraVisuals provides advanced customization and extended functionality to the lightweight LXQt desktop. By integrating a highly performant native C++ panel plugin with a feature-rich Python and PyQt6 daemon, it allows for the embedding of complex UI elements directly into the LXQt panel while maintaining optimal system performance.
 
-Traditional panel widgets are often static, hard to configure, and difficult to extend. NaraVisuals completely revolutionizes panel applets by bringing the power of Python directly to your desktop.
+## Architecture & Design
 
-* 🎨 **Dynamic Theming:** All widgets instantly adapt to your active LXQt theme (`QPalette`), supporting flawless light/dark mode transitions out of the box.
-* ⚙️ **Unified GUI Settings Hub:** No more manual config files! Tweak your widget settings visually via the beautiful `naravisuals-manager`.
-* 🧩 **Client-Server Architecture:** Widgets render seamlessly in the panel but execute in the background via a headless Python service, keeping LXQt fast and responsive.
-* 🛠️ **Extensible:** Writing a new panel widget takes just a few lines of Python. Connect to any API or system process effortlessly!
+Traditional panel widgets are often static and difficult to extend. NaraVisuals modernizes panel applets by utilizing Python for rapid development and API integration.
 
-## 🚀 The Widget Arsenal
+* **Dynamic Theming:** All widgets automatically inherit and adapt to the active LXQt `QPalette` system, supporting seamless transitions between light and dark themes.
+* **Centralized Configuration:** Manual configuration files are deprecated in favor of a unified GUI Settings Hub (`naravisuals-manager`).
+* **Client-Server Model:** Widget UI rendering executes within the panel, while heavy processing and data retrieval are offloaded to a headless background Python service to keep the LXQt session responsive.
+* **Extensibility:** Developing a new panel widget requires minimal Python code, allowing for rapid integration with system processes and external APIs.
 
-We ship with **16 powerful widgets**, ranging from essential productivity tools to deep system-level API integrations.
+## Included Modules
 
-### 💼 Essentials
-* **System Monitor:** Real-time CPU, RAM, Disk, and SWAP tracking.
-* **Network Monitor:** Live traffic graphs (`eth0`, `wlan0`).
-* **Clipboard Manager:** Complete clipboard history tracking.
-* **Quick Notes:** Jot down instant sticky notes directly from the panel.
-* **Pomodoro Timer:** Beautiful productivity timer.
-* **Media Player:** MPRIS-compatible controls for Spotify, VLC, and more.
+The repository currently provides 16 widgets, ranging from standard desktop utilities to deep system-level integrations.
 
-### 🧪 Experimental & Hardware Integrations
-* **🐳 Container Radar:** Live dashboard for running Docker/Podman containers.
-* **🎮 GPU Matrix:** Direct `nvidia-smi` hooks for thermal and VRAM utilization tracking.
-* **📶 Bluetooth Radar:** D-Bus integrated scanning for nearby devices.
-* **🎵 Audio Visualizer:** 20fps animated frequency spectrum matrix.
-* **🚨 System Log Ticker:** Live streaming marquee of critical `journalctl` panics and errors.
-* **💡 Smart Home Toggle:** One-click webhook executions for Home Assistant.
+### Core Utilities
+* **System Monitor:** Real-time tracking of CPU, RAM, Disk, and SWAP.
+* **Network Monitor:** Live traffic graphing for specified interfaces (e.g., `eth0`, `wlan0`).
+* **Clipboard Manager:** Persistent clipboard history tracking.
+* **Quick Notes:** Direct panel-integrated text storage.
+* **Pomodoro Timer:** Standardized productivity timer.
+* **Media Player:** MPRIS-compatible controls for external media clients.
 
-## 📦 Installation
+### System & Hardware Integrations
+* **Container Radar:** Live dashboard for monitoring Docker and Podman instances.
+* **GPU Matrix:** Direct hooks into `nvidia-smi` for thermal and VRAM utilization tracking.
+* **Bluetooth Radar:** D-Bus integrated scanning for nearby Bluetooth devices.
+* **Audio Visualizer:** Animated frequency spectrum matrix.
+* **System Log Ticker:** Live streaming output of critical `journalctl` panics and errors.
+* **Smart Home Toggle:** Configurable webhook execution for endpoints such as Home Assistant.
+
+## Installation
 
 ### Arch Linux (AUR)
-We provide a `PKGBUILD` for seamless installation on Arch-based distributions:
+A `PKGBUILD` is provided for seamless installation on Arch-based distributions:
 ```bash
 git clone https://github.com/naranyala/naravisuals-lxqt-widgets.git
 cd naravisuals-lxqt-widgets
 makepkg -si
 ```
 
-### Generic Linux (Debian, Ubuntu, Fedora)
-Ensure you have `cmake`, `lxqt-build-tools`, and `python3-pyqt6` installed, then run our universal installer:
+### Debian, Ubuntu, and Fedora
+Ensure the following build dependencies are installed: `cmake`, `lxqt-build-tools`, and `python3-pyqt6`. Then, execute the provided installation script:
 ```bash
 git clone https://github.com/naranyala/naravisuals-lxqt-widgets.git
 cd naravisuals-lxqt-widgets
 PREFIX=/usr ./install.sh
 ```
 
-## ⚙️ Usage & Configuration
+## Usage & Configuration
 
-Once installed, simply right-click your LXQt panel -> **Add Widgets...** and search for `NaraVisuals`.
+Once the installation is complete, right-click the LXQt panel, select **Add Widgets**, and search for `NaraVisuals`.
 
-To configure your widgets, launch the unified Settings Hub from your terminal or application launcher:
+To configure widget parameters, launch the unified Settings Hub from your terminal or application launcher:
 ```bash
 naravisuals-manager
 ```
-From here, you can set weather locations, pomodoro durations, network interfaces, and more!
+This interface allows for the configuration of environmental variables such as weather locations, network interfaces, and external API endpoints.
 
-## 🗺️ Roadmap
-- [ ] Complete Wayland migration (Layer Shell & D-Bus IPC implementation).
-- [ ] PyPI distribution (`pip install naravisuals`).
-- [ ] Evdev integration for APM Counter widget.
-- [ ] Pipewire PCM hooks for the Audio Visualizer.
+## Roadmap
 
----
-<div align="center">
-  <i>Made with ❤️ for the Linux Desktop Community.</i>
-</div>
+* Implement complete Wayland migration (Layer Shell and native D-Bus IPC).
+* Finalize PyPI distribution packaging (`pip install naravisuals`).
+* Integrate `evdev` for the APM Counter widget.
+* Implement Pipewire PCM hooks for the Audio Visualizer.
