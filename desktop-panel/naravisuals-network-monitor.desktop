@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=network-wired
+Name=Network Monitor
+Comment=Real-time network traffic graph

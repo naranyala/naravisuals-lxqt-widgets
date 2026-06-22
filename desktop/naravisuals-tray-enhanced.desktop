@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Tray Enhanced
+Comment=Enhanced system tray with extra features
+Icon=emblem-system
+Categories=Utility;LXQt;
+Exec=naravisuals-tray-enhanced
+Terminal=false

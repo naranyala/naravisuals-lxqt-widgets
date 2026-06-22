@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=utilities-system-monitor
+Name=System Monitor
+Comment=CPU, RAM, Disk, SWAP usage bars with network speed

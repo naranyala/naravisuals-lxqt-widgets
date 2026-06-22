@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+
+echo "==> Removing NaraVisuals LXQt Widgets..."
+
+BIN_DIR="${HOME}/.local/bin"
+APP_DIR="${HOME}/.local/share/applications"
+PANEL_DIR="${HOME}/.local/share/lxqt/lxqt-panel"
+AUTOSTART_DIR="${HOME}/.config/autostart"
+
+rm -rf "${BIN_DIR}/naravisuals-"*
+rm -f "${BIN_DIR}/naravisuals-manager"
+
+for f in "${APP_DIR}/naravisuals-"*.desktop; do
+    rm -f "$f"
+done
+
+for f in "${PANEL_DIR}/naravisuals-"*.desktop; do
+    rm -f "$f"
+done
+
+for f in "${AUTOSTART_DIR}/naravisuals-"*.desktop; do
+    rm -f "$f"
+done
+
+rm -rf "${BIN_DIR}/naravisuals" 2>/dev/null || true
+
+echo "  Removed launchers, desktop files, autostart entries."
+echo ""
+echo "=== Removal complete ==="

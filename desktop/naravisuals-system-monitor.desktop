@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals System Monitor
+Comment=CPU, RAM, Disk, SWAP usage bars with network speed
+Icon=utilities-system-monitor
+Categories=System;Monitor;LXQt;
+Exec=naravisuals-system-monitor
+Terminal=false

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Widget Manager
+Comment=Launch and manage all NaraVisuals LXQt widgets
+Icon=utilities-system-monitor
+Categories=Utility;LXQt;
+Exec=naravisuals-manager
+Terminal=false

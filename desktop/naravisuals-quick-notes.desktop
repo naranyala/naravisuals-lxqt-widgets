@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Quick Notes
+Comment=Quick sticky notes manager
+Icon=accessories-text-editor
+Categories=Utility;LXQt;
+Exec=naravisuals-quick-notes
+Terminal=false

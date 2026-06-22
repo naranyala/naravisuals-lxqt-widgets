@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Battery Info
+Comment=Enhanced battery status with custom icon
+Icon=battery
+Categories=Hardware;LXQt;
+Exec=naravisuals-battery
+Terminal=false

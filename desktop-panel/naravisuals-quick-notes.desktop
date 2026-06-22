@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=accessories-text-editor
+Name=Quick Notes
+Comment=Quick sticky notes manager

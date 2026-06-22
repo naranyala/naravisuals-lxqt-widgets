@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=multimedia-player
+Name=Media Player
+Comment=Control MPRIS-compatible media players

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=battery
+Name=Battery Info
+Comment=Enhanced battery status with custom icon

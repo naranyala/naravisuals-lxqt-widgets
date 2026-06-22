@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Pomodoro Timer
+Comment=Pomodoro productivity timer
+Icon=alarm-clock
+Categories=Utility;LXQt;
+Exec=naravisuals-pomodoro
+Terminal=false

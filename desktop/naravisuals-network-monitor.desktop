@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Network Monitor
+Comment=Real-time network traffic graph
+Icon=network-wired
+Categories=System;Monitor;LXQt;
+Exec=naravisuals-network-monitor
+Terminal=false

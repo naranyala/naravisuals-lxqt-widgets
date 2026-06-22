@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Clipboard Manager
+Comment=Clipboard history manager
+Icon=edit-copy
+Categories=Utility;LXQt;
+Exec=naravisuals-clipboard-manager
+Terminal=false

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Media Player
+Comment=Control MPRIS-compatible media players
+Icon=multimedia-player
+Categories=AudioVideo;LXQt;
+Exec=naravisuals-media-player
+Terminal=false

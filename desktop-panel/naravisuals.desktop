@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=utilities-system-monitor
+Name=NaraVisuals Widget (selectable)
+Comment=Select and embed any NaraVisuals Python widget

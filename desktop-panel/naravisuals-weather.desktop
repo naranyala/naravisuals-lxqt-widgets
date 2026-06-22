@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=weather-clear
+Name=Weather
+Comment=Current weather conditions for your city

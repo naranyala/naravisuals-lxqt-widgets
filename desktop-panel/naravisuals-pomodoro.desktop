@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=alarm-clock
+Name=Pomodoro Timer
+Comment=Pomodoro productivity timer

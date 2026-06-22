@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=emblem-system
+Name=Tray Enhanced
+Comment=Enhanced system tray with extra features

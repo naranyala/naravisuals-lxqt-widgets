@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Weather
+Comment=Current weather conditions for your city
+Icon=weather-clear
+Categories=Utility;LXQt;
+Exec=naravisuals-weather
+Terminal=false
