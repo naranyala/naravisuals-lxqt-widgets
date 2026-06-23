@@ -10,9 +10,43 @@ override_dh_auto_build:
 override_dh_auto_install:
 	python3 setup.py install --root=debian/naravisuals-lxqt-widgets --install-layout=deb
 	cd native-plugin/build && make install DESTDIR=../../debian/naravisuals-lxqt-widgets
-	install -Dpm 644 packaging/naravisuals-daemon.service debian/naravisuals-lxqt-widgets/usr/lib/systemd/user/naravisuals-daemon.service
-	install -Dpm 644 packaging/stock-panel.conf debian/naravisuals-lxqt-widgets/usr/share/naravisuals/stock-panel.conf
-	install -Dpm 755 scripts/naravisuals-panel-reset debian/naravisuals-lxqt-widgets/usr/bin/naravisuals-panel-reset
+
+	# Systemd service
+	install -Dpm 644 packaging/naravisuals-daemon.service \
+		debian/naravisuals-lxqt-widgets/usr/lib/systemd/user/naravisuals-daemon.service
+
+	# Stock panel config
+	install -Dpm 644 packaging/stock-panel.conf \
+		debian/naravisuals-lxqt-widgets/usr/share/naravisuals/stock-panel.conf
+
+	# Panel reset tool
+	install -Dpm 755 scripts/naravisuals-panel-reset \
+		debian/naravisuals-lxqt-widgets/usr/bin/naravisuals-panel-reset
+
+	# GUI launcher scripts (nv- prefix)
+	for app in nv-manager nv-manager-legacy nv-theme-store nv-desktop-manager nv-sddm-manager; do \
+		module=""; \
+		case "$$app" in \
+			nv-manager)          module="naravisuals.manager.control_center" ;; \
+			nv-manager-legacy)   module="naravisuals.manager.app" ;; \
+			nv-theme-store)      module="naravisuals.theme_manager.app" ;; \
+			nv-desktop-manager)  module="naravisuals.desktop_manager.app" ;; \
+			nv-sddm-manager)     module="naravisuals.sddm_manager.app" ;; \
+		esac; \
+		printf '#!/usr/bin/env bash\nexec python3 -m $$module "$$@"\n' \
+			> debian/naravisuals-lxqt-widgets/usr/bin/$$app; \
+		chmod 755 debian/naravisuals-lxqt-widgets/usr/bin/$$app; \
+	done
+
+	# Desktop files
+	install -Dpm 644 desktop/nv-manager.desktop \
+		debian/naravisuals-lxqt-widgets/usr/share/applications/nv-manager.desktop
+	install -Dpm 644 desktop/nv-theme-store.desktop \
+		debian/naravisuals-lxqt-widgets/usr/share/applications/nv-theme-store.desktop
+	install -Dpm 644 desktop/nv-desktop-manager.desktop \
+		debian/naravisuals-lxqt-widgets/usr/share/applications/nv-desktop-manager.desktop
+	install -Dpm 644 desktop/nv-sddm-manager.desktop \
+		debian/naravisuals-lxqt-widgets/usr/share/applications/nv-sddm-manager.desktop
 
 override_dh_auto_clean:
 	rm -rf build dist *.egg-info

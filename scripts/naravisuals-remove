@@ -8,19 +8,22 @@ APP_DIR="${HOME}/.local/share/applications"
 PANEL_DIR="${HOME}/.local/share/lxqt/lxqt-panel"
 AUTOSTART_DIR="${HOME}/.config/autostart"
 
-rm -rf "${BIN_DIR}/naravisuals-"*
-rm -f "${BIN_DIR}/naravisuals-manager"
+rm -f "${BIN_DIR}/nv-"*
+rm -f "${BIN_DIR}/naravisuals-"*
 
+for f in "${APP_DIR}/nv-"*.desktop; do
+    rm -f "$f" 2>/dev/null || true
+done
 for f in "${APP_DIR}/naravisuals-"*.desktop; do
-    rm -f "$f"
+    rm -f "$f" 2>/dev/null || true
 done
 
 for f in "${PANEL_DIR}/naravisuals-"*.desktop; do
-    rm -f "$f"
+    rm -f "$f" 2>/dev/null || true
 done
 
 for f in "${AUTOSTART_DIR}/naravisuals-"*.desktop; do
-    rm -f "$f"
+    rm -f "$f" 2>/dev/null || true
 done
 
 rm -rf "${BIN_DIR}/naravisuals" 2>/dev/null || true

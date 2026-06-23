@@ -354,6 +354,35 @@ naravisuals-panel-reset --backup
 naravisuals-panel-reset --dry-run --stock
 ```
 
+### Diagnostics
+
+Run diagnostic checks to identify issues:
+
+```bash
+# Run all diagnostic checks
+naravisuals-doctor
+
+# Validate LXQt configuration
+naravisuals-lxqt-validator
+
+# Scan and fix LXQt configuration
+naravisuals-lxqt-scanner
+naravisuals-lxqt-scanner --fix   # Auto-fix issues
+
+# View daemon logs
+naravisuals-logs
+
+# Follow logs in real-time
+naravisuals-logs -f
+
+# Show only errors
+naravisuals-logs -e
+```
+
+### Troubleshooting
+
+See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common issues and solutions.
+
 ---
 
 ## Configuration
@@ -432,6 +461,22 @@ See [TODOS.md](TODOS.md) for the complete development roadmap.
 
 ---
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | System architecture and component design |
+| [API Reference](docs/API.md) | D-Bus interface documentation |
+| [Widgets](docs/WIDGETS.md) | Complete widget reference |
+| [Theming](docs/THEMING.md) | Theme customization guide |
+| [Development](docs/DEVELOPMENT.md) | Developer guide |
+| [Deployment](docs/DEPLOYMENT.md) | Installation and deployment |
+| [Security](docs/SECURITY.md) | Security considerations |
+| [Contributing](docs/CONTRIBUTING.md) | Contribution guidelines |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues and solutions |
+| [Changelog](docs/CHANGELOG.md) | Version history |
+| [Fedora Install](docs/INSTALL-FEDORA.md) | Fedora/RHEL installation |
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
@@ -440,7 +485,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## Contributing
 
-Contributions are welcome. Please see the project's coding conventions and test requirements before submitting pull requests.
+Contributions are welcome! Please see the [Contributing Guide](docs/CONTRIBUTING.md) for details.
 
 ## Support
 

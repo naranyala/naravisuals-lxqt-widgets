@@ -38,14 +38,17 @@ dev = [
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.1.0",
+    "pyinstaller>=6.0",
 ]
 
 [project.scripts]
-naravisuals-manager = "naravisuals.manager.control_center:main"
-naravisuals-manager-legacy = "naravisuals.manager.app:main"
-naravisuals-daemon = "naravisuals.daemon.__main__:main"
-naravisuals-widget = "naravisuals.widgets.__main__:main"
-naravisuals-sddm-manager = "naravisuals.sddm_manager.app:main"
+nv-manager = "naravisuals.manager.control_center:main"
+nv-manager-legacy = "naravisuals.manager.app:main"
+nv-daemon = "naravisuals.daemon.__main__:main"
+nv-widget = "naravisuals.widgets.__main__:main"
+nv-sddm-manager = "naravisuals.sddm_manager.app:main"
+nv-theme-store = "naravisuals.theme_manager.app:main"
+nv-desktop-manager = "naravisuals.desktop_manager.app:main"
 
 [project.urls]
 Homepage = "https://github.com/naranyala/naravisuals-lxqt-widgets"

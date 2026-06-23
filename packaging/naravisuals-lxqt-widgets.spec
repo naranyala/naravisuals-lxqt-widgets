@@ -1,7 +1,7 @@
 Name:           naravisuals-lxqt-widgets
 Version:        2.0.0
 Release:        1%{?dist}
-Summary:        Advanced panel widgets for LXQt desktop environment
+Summary:        Advanced panel widgets and theme manager for LXQt desktop
 License:        GPLv3+
 URL:            https://github.com/naranyala/naravisuals-lxqt-widgets
 Source0:        %{name}-%{version}.tar.gz
@@ -22,67 +22,75 @@ Requires:       lxqt-panel
 Requires:       hicolor-icon-theme
 
 %description
-NaraVisuals provides advanced customization and extended functionality to the 
-lightweight LXQt desktop. It integrates a native C++ panel plugin with a 
-feature-rich Python/PyQt6 daemon, allowing complex UI elements to be embedded 
-directly into the LXQt panel.
+NaraVisuals provides advanced customization and extended functionality to the
+lightweight LXQt desktop. Includes system monitoring widgets, theme manager,
+panel configuration, desktop entry management, and SDDM login manager.
 
-Features include system monitoring, weather widgets, productivity tools, 
-clipboard management, and more.
+Features:
+- System Monitor, Network, Battery, Weather widgets
+- Theme Manager (Labwc, KWin, LXQt themes, colors, fonts, icons)
+- Panel Layout Manager (add/remove/reorder plugins)
+- Desktop Entry Manager (browse/create/edit .desktop files)
+- SDDM Display Manager theming
 
 %prep
 %setup -q
 
 %build
-# Build native plugin
 cd native-plugin
 mkdir -p build
 cd build
 %cmake ..
 %make_build
 
-# Build Python package
 cd ../..
 %py3_build
 
 %install
 %py3_install
-
-# Install native plugin
 cd native-plugin/build
 %make_install
 
-# Install systemd service
+# Systemd service
 install -Dpm 644 packaging/naravisuals-daemon.service \
     %{buildroot}%{_userunitdir}/naravisuals-daemon.service
 
-# Install D-Bus service
-install -Dpm 644 packaging/org.naravisuals.Daemon.service \
-    %{buildroot}%{_datadir}/dbus-1/services/org.naravisuals.Daemon.service
-
-# Install stock panel config
+# Stock panel config
 install -Dpm 644 packaging/stock-panel.conf \
     %{buildroot}%{_datadir}/naravisuals/stock-panel.conf
 
-# Install desktop files
-install -Dpm 644 desktop/naravisuals-manager.desktop \
-    %{buildroot}%{_datadir}/applications/naravisuals-manager.desktop
-
-# Install panel reset tool
+# Panel reset tool
 install -Dpm 755 scripts/naravisuals-panel-reset \
     %{buildroot}%{_bindir}/naravisuals-panel-reset
 
-# Create symlinks for widget launchers
-for widget in system-monitor weather quick-notes clipboard-manager pomodoro \
-              network-monitor tray-enhanced media-player battery; do
-    ln -s naravisuals-widget %{buildroot}%{_bindir}/naravisuals-${widget}
+# GUI launcher scripts (nv- prefix)
+for app in nv-manager nv-manager-legacy nv-theme-store nv-desktop-manager nv-sddm-manager; do
+    case "$app" in
+        nv-manager)          mod="naravisuals.manager.control_center" ;;
+        nv-manager-legacy)   mod="naravisuals.manager.app" ;;
+        nv-theme-store)      mod="naravisuals.theme_manager.app" ;;
+        nv-desktop-manager)  mod="naravisuals.desktop_manager.app" ;;
+        nv-sddm-manager)     mod="naravisuals.sddm_manager.app" ;;
+    esac
+    cat > %{buildroot}%{_bindir}/$app << EOF
+#!/usr/bin/env bash
+exec python3 -m $mod "\$@"
+EOF
+    chmod 755 %{buildroot}%{_bindir}/$app
 done
 
-%post
-# Update icon cache
-/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+# Desktop files
+install -Dpm 644 desktop/nv-manager.desktop \
+    %{buildroot}%{_datadir}/applications/nv-manager.desktop
+install -Dpm 644 desktop/nv-theme-store.desktop \
+    %{buildroot}%{_datadir}/applications/nv-theme-store.desktop
+install -Dpm 644 desktop/nv-desktop-manager.desktop \
+    %{buildroot}%{_datadir}/applications/nv-desktop-manager.desktop
+install -Dpm 644 desktop/nv-sddm-manager.desktop \
+    %{buildroot}%{_datadir}/applications/nv-sddm-manager.desktop
 
-# Reload D-Bus
+%post
+/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 /usr/bin/dbus-send --session --type=method_call --dest=org.freedesktop.DBus \
     /org/freedesktop/DBus org.freedesktop.DBus.ReloadConfig || :
 
@@ -97,18 +105,21 @@ fi
 
 %files
 %license LICENSE
-%doc README.md TODOS.md WIDGET_EVALUATION.md
+%doc README.md TODOS.md
 
 # Python packages
 %{python3_sitelib}/naravisuals/
 %{python3_sitelib}/%{name}-%{version}-py%{python3_version}.egg-info/
 
-# Binaries
-%{_bindir}/naravisuals-manager
-%{_bindir}/naravisuals-daemon
-%{_bindir}/naravisuals-widget
+# GUI binaries (nv- prefix)
+%{_bindir}/nv-manager
+%{_bindir}/nv-manager-legacy
+%{_bindir}/nv-theme-store
+%{_bindir}/nv-desktop-manager
+%{_bindir}/nv-sddm-manager
+
+# Utility binaries
 %{_bindir}/naravisuals-panel-reset
-%{_bindir}/naravisuals-*
 
 # Native plugin
 %{_libdir}/lxqt/lxqt-panel/*.so
@@ -116,15 +127,18 @@ fi
 # Systemd user service
 %{_userunitdir}/naravisuals-daemon.service
 
-# D-Bus service
-%{_datadir}/dbus-1/services/org.naravisuals.Daemon.service
-
 # Data files
 %{_datadir}/naravisuals/
-%{_datadir}/applications/naravisuals-*.desktop
-%{_datadir}/icons/hicolor/
+%{_datadir}/applications/nv-*.desktop
 
 %changelog
+* Sun Jun 23 2026 NaraVisuals <naranyala@users.noreply.github.com> - 2.0.0-1
+- Renamed GUI apps to nv- prefix
+- Added Theme Manager (Labwc/KWin/LXQt/Panel/Colors)
+- Added Desktop Entry Manager
+- Added PyInstaller packaging support
+- Added AppImage and Flatpak build support
+
 * Sat Jun 22 2026 NaraVisuals <naranyala@users.noreply.github.com> - 2.0.0-1
 - D-Bus IPC architecture for Wayland support
 - Single daemon process for all widgets

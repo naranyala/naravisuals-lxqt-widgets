@@ -1,0 +1,405 @@
+{
+  "version": "1.0.0",
+  "themes": [
+    {
+      "id": "nord-frost",
+      "name": "Nord Frost",
+      "author": "NaraVisuals",
+      "description": "Clean arctic blue palette inspired by the Nord color scheme. Perfect for focused, distraction-free work.",
+      "category": "Color Scheme",
+      "tags": ["dark", "blue", "minimal", "arctic"],
+      "preview_colors": {
+        "background": "#2e3440",
+        "foreground": "#d8dee9",
+        "accent": "#88c0d0",
+        "border": "#3b4252"
+      },
+      "components": {
+        "labwc_theme": "Nord",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Nord",
+        "color_scheme": "nord",
+        "panel_layout": "default",
+        "wallpaper": "nord-aurora"
+      },
+      "rating": 4.8,
+      "installs": 1250,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "catppuccin-mocha",
+      "name": "Catppuccin Mocha",
+      "author": "NaraVisuals",
+      "description": "Soothing pastel colors for the modern aesthetic. Warm tones with excellent contrast.",
+      "category": "Color Scheme",
+      "tags": ["dark", "pastel", "warm", "aesthetic"],
+      "preview_colors": {
+        "background": "#1e1e2e",
+        "foreground": "#cdd6f4",
+        "accent": "#f38ba8",
+        "border": "#313244"
+      },
+      "components": {
+        "labwc_theme": "Catppuccin-Mocha",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Catppuccin-Mocha",
+        "color_scheme": "catppuccin-mocha",
+        "panel_layout": "default",
+        "wallpaper": "catppuccin-mocha"
+      },
+      "rating": 4.9,
+      "installs": 3200,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "dracula",
+      "name": "Dracula",
+      "author": "NaraVisuals",
+      "description": "A dark theme with vibrant purple and pink accents. Bold and expressive.",
+      "category": "Color Scheme",
+      "tags": ["dark", "purple", "vibrant", "bold"],
+      "preview_colors": {
+        "background": "#282a36",
+        "foreground": "#f8f8f2",
+        "accent": "#bd93f9",
+        "border": "#44475a"
+      },
+      "components": {
+        "labwc_theme": "Dracula",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Dracula",
+        "color_scheme": "dracula",
+        "panel_layout": "default",
+        "wallpaper": "dracula"
+      },
+      "rating": 4.7,
+      "installs": 2800,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "tokyo-night",
+      "name": "Tokyo Night",
+      "author": "NaraVisuals",
+      "description": "Tokyo's neon-lit night sky translated into a desktop theme. Cool blues and warm accents.",
+      "category": "Color Scheme",
+      "tags": ["dark", "blue", "neon", "city"],
+      "preview_colors": {
+        "background": "#1a1b26",
+        "foreground": "#c0caf5",
+        "accent": "#7aa2f7",
+        "border": "#24283b"
+      },
+      "components": {
+        "labwc_theme": "Tokyo-Night",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Tokyo-Night",
+        "color_scheme": "tokyo-night",
+        "panel_layout": "default",
+        "wallpaper": "tokyo-night"
+      },
+      "rating": 4.8,
+      "installs": 2100,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "gruvbox-dark",
+      "name": "Gruvbox Dark",
+      "author": "NaraVisuals",
+      "description": "Retro warm colors with high contrast. A classic ricing theme.",
+      "category": "Color Scheme",
+      "tags": ["dark", "warm", "retro", "orange"],
+      "preview_colors": {
+        "background": "#282828",
+        "foreground": "#ebdbb2",
+        "accent": "#d65d0e",
+        "border": "#3c3836"
+      },
+      "components": {
+        "labwc_theme": "Gruvbox-Dark",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Gruvbox-Dark",
+        "color_scheme": "gruvbox-dark",
+        "panel_layout": "default",
+        "wallpaper": "gruvbox"
+      },
+      "rating": 4.6,
+      "installs": 1800,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "solarized-dark",
+      "name": "Solarized Dark",
+      "author": "NaraVisuals",
+      "description": "Ethan Schoonover's precision-engineered color palette. Timeless and readable.",
+      "category": "Color Scheme",
+      "tags": ["dark", "blue", "green", "precise"],
+      "preview_colors": {
+        "background": "#002b36",
+        "foreground": "#839496",
+        "accent": "#268bd2",
+        "border": "#073642"
+      },
+      "components": {
+        "labwc_theme": "Solarized-Dark",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Solarized-Dark",
+        "color_scheme": "solarized-dark",
+        "panel_layout": "default",
+        "wallpaper": "solarized"
+      },
+      "rating": 4.5,
+      "installs": 1500,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "rose-pine",
+      "name": "Rose Pine",
+      "author": "NaraVisuals",
+      "description": "All-natural pine, frosted dawn. A gentle, rosy dark theme.",
+      "category": "Color Scheme",
+      "tags": ["dark", "pink", "gentle", "natural"],
+      "preview_colors": {
+        "background": "#191724",
+        "foreground": "#e0def4",
+        "accent": "#eb6f92",
+        "border": "#26233a"
+      },
+      "components": {
+        "labwc_theme": "Rose-Pine",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Rose-Pine",
+        "color_scheme": "rose-pine",
+        "panel_layout": "default",
+        "wallpaper": "rose-pine"
+      },
+      "rating": 4.7,
+      "installs": 1900,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "one-dark",
+      "name": "One Dark",
+      "author": "NaraVisuals",
+      "description": "Atom's One Dark theme adapted for the full desktop. Balanced and professional.",
+      "category": "Color Scheme",
+      "tags": ["dark", "balanced", "professional", "atom"],
+      "preview_colors": {
+        "background": "#282c34",
+        "foreground": "#abb2bf",
+        "accent": "#61afef",
+        "border": "#3e4451"
+      },
+      "components": {
+        "labwc_theme": "One-Dark",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "One-Dark",
+        "color_scheme": "one-dark",
+        "panel_layout": "default",
+        "wallpaper": "one-dark"
+      },
+      "rating": 4.6,
+      "installs": 1700,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "macos-dock",
+      "name": "macOS Dock",
+      "author": "NaraVisuals",
+      "description": "Recreate the macOS dock experience on Linux. Centered bottom panel with blur.",
+      "category": "Preset",
+      "tags": ["preset", "macos", "dock", "centered"],
+      "preview_colors": {
+        "background": "#1e1e1e",
+        "foreground": "#ffffff",
+        "accent": "#007aff",
+        "border": "#333333"
+      },
+      "components": {
+        "labwc_theme": "Arc-Dark",
+        "lxqt_theme": "Frost",
+        "kvantum_theme": "Aercerc",
+        "color_scheme": "macos",
+        "panel_layout": "macos_dock",
+        "wallpaper": "gradient-dark"
+      },
+      "rating": 4.4,
+      "installs": 950,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "windows-classic",
+      "name": "Windows Classic",
+      "author": "NaraVisuals",
+      "description": "Nostalgic Windows-style layout with bottom taskbar and start menu.",
+      "category": "Preset",
+      "tags": ["preset", "windows", "classic", "traditional"],
+      "preview_colors": {
+        "background": "#f0f0f0",
+        "foreground": "#000000",
+        "accent": "#0078d4",
+        "border": "#cccccc"
+      },
+      "components": {
+        "labwc_theme": "Clearlooks",
+        "lxqt_theme": "Light",
+        "kvantum_theme": "Breeze",
+        "color_scheme": "windows",
+        "panel_layout": "windows_classic",
+        "wallpaper": "windows-blue"
+      },
+      "rating": 4.2,
+      "installs": 800,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "minimal-tiling",
+      "name": "Minimal Tiling",
+      "author": "NaraVisuals",
+      "description": "Ultra-clean tiling setup. No decorations, maximum screen real estate.",
+      "category": "Preset",
+      "tags": ["preset", "tiling", "minimal", "productive"],
+      "preview_colors": {
+        "background": "#111111",
+        "foreground": "#eeeeee",
+        "accent": "#ff6600",
+        "border": "#222222"
+      },
+      "components": {
+        "labwc_theme": "None",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Default",
+        "color_scheme": "minimal",
+        "panel_layout": "minimal_tiling",
+        "wallpaper": "solid-black"
+      },
+      "rating": 4.3,
+      "installs": 650,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "cyberpunk-neon",
+      "name": "Cyberpunk Neon",
+      "author": "NaraVisuals",
+      "description": "Neon-soaked cyberpunk aesthetic. Glowing edges and electric colors.",
+      "category": "Color Scheme",
+      "tags": ["dark", "neon", "cyberpunk", "vibrant"],
+      "preview_colors": {
+        "background": "#0a0a0f",
+        "foreground": "#e0e0ff",
+        "accent": "#ff00ff",
+        "border": "#1a1a2e"
+      },
+      "components": {
+        "labwc_theme": "Cyberpunk",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Neon",
+        "color_scheme": "cyberpunk",
+        "panel_layout": "default",
+        "wallpaper": "cyberpunk-city"
+      },
+      "rating": 4.5,
+      "installs": 1100,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "earth-tones",
+      "name": "Earth Tones",
+      "author": "NaraVisuals",
+      "description": "Warm, organic colors inspired by nature. Easy on the eyes for long sessions.",
+      "category": "Color Scheme",
+      "tags": ["dark", "warm", "earthy", "natural"],
+      "preview_colors": {
+        "background": "#2b2118",
+        "foreground": "#e8d5b7",
+        "accent": "#c8956c",
+        "border": "#4a3728"
+      },
+      "components": {
+        "labwc_theme": "Earth",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Earth-Tones",
+        "color_scheme": "earth-tones",
+        "panel_layout": "default",
+        "wallpaper": "mountain-sunset"
+      },
+      "rating": 4.4,
+      "installs": 720,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "frostbite",
+      "name": "Frostbite",
+      "author": "NaraVisuals",
+      "description": "Icy blue glassmorphism theme with transparency effects. Cool and modern.",
+      "category": "Color Scheme",
+      "tags": ["dark", "blue", "glass", "frost"],
+      "preview_colors": {
+        "background": "#0d1117",
+        "foreground": "#c9d1d9",
+        "accent": "#58a6ff",
+        "border": "#21262d"
+      },
+      "components": {
+        "labwc_theme": "Frostbite",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Frostbite",
+        "color_scheme": "frostbite",
+        "panel_layout": "default",
+        "wallpaper": "ice-aurora"
+      },
+      "rating": 4.6,
+      "installs": 1350,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "omni-dark",
+      "name": "Omni Dark",
+      "author": "NaraVisuals",
+      "description": "A universal dark theme that works everywhere. Safe, clean, and professional.",
+      "category": "Color Scheme",
+      "tags": ["dark", "universal", "safe", "clean"],
+      "preview_colors": {
+        "background": "#1a1a2e",
+        "foreground": "#eaeaea",
+        "accent": "#e94560",
+        "border": "#16213e"
+      },
+      "components": {
+        "labwc_theme": "Omni-Dark",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Omni-Dark",
+        "color_scheme": "omni-dark",
+        "panel_layout": "default",
+        "wallpaper": "gradient-purple"
+      },
+      "rating": 4.3,
+      "installs": 880,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    },
+    {
+      "id": "sakura-midnight",
+      "name": "Sakura Midnight",
+      "author": "NaraVisuals",
+      "description": "Cherry blossoms under a midnight sky. Delicate pinks on deep indigo.",
+      "category": "Color Scheme",
+      "tags": ["dark", "pink", "japanese", "elegant"],
+      "preview_colors": {
+        "background": "#16132b",
+        "foreground": "#e8d0e8",
+        "accent": "#ff7eb3",
+        "border": "#2a2440"
+      },
+      "components": {
+        "labwc_theme": "Sakura",
+        "lxqt_theme": "Dark",
+        "kvantum_theme": "Sakura",
+        "color_scheme": "sakura-midnight",
+        "panel_layout": "default",
+        "wallpaper": "sakura-night"
+      },
+      "rating": 4.7,
+      "installs": 1600,
+      "compatibility": ["lxqt-2.0", "labwc-0.6", "labwc-0.7"]
+    }
+  ]
+}

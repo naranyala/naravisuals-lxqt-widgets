@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Theme Manager
+Comment=Manage Labwc/KWin/LXQt themes, panels, icons, fonts, and colors
+Exec=nv-theme-store
+Icon=preferences-desktop-theme
+Terminal=false
+Categories=Qt;Utility;Settings;
+Keywords=theme;lxqt;labwc;kwin;icons;font;panel;color;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Settings Hub
+Comment=Widget configuration and panel organizer
+Exec=nv-manager-legacy
+Icon=naravisuals
+Terminal=false
+Categories=Qt;Utility;Settings;

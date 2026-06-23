@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Control Center
+Comment=All-in-one GUI for managing LXQt widgets, panel, themes
+Exec=nv-manager
+Icon=naravisuals
+Terminal=false
+Categories=Qt;Utility;Settings;

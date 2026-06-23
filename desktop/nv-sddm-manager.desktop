@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals SDDM Manager
+Comment=Manage SDDM display manager themes and settings
+Exec=nv-sddm-manager
+Icon=preferences-desktop-display
+Terminal=false
+Categories=Qt;Utility;Settings;

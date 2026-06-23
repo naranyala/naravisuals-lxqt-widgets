@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=NaraVisuals Desktop Manager
+Comment=Manage .desktop files, shortcuts, icons, and autostart entries
+Exec=nv-desktop-manager
+Icon=system-file-manager
+Terminal=false
+Categories=Qt;Utility;Settings;
+Keywords=desktop;shortcuts;launcher;autostart;

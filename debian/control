@@ -25,11 +25,15 @@ Depends: ${misc:Depends},
          python3-dbus,
          python3-notify2,
          lxqt-panel
-Description: Advanced panel widgets for LXQt desktop environment
+Description: Advanced LXQt desktop widgets and theme manager
  NaraVisuals provides advanced customization and extended functionality
- to the lightweight LXQt desktop. It integrates a native C++ panel plugin
- with a feature-rich Python/PyQt6 daemon, allowing complex UI elements
- to be embedded directly into the LXQt panel.
+ to the lightweight LXQt desktop. Includes:
  .
- Features include system monitoring, weather widgets, productivity tools,
- clipboard management, and more.
+ - System monitoring widgets (CPU, RAM, Network, Battery)
+ - Theme Manager (Labwc, KWin, LXQt themes, colors, fonts, icons)
+ - Panel Layout Manager (add/remove/reorder plugins)
+ - Desktop Entry Manager (browse/create/edit .desktop files)
+ - SDDM Display Manager theming
+ .
+ GUI apps use the nv- prefix: nv-manager, nv-theme-store,
+ nv-desktop-manager, nv-sddm-manager.

@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .Python
+.pytest_cache/
 build/
 develop-eggs/
 dist/
@@ -24,7 +25,6 @@ ENV/
 env/
 
 # C/C++ / CMake (for native-plugin)
-native-plugin/build/
 CMakeCache.txt
 CMakeFiles/
 Makefile
@@ -48,8 +48,10 @@ lxqt-panel-2.3.2/
 *.tar.xz
 *.tar.xz.asc
 *.dsc
-*.debian.tar.xz
-*.orig.tar.xz
 
 # Output from scripts
 *.log
+
+# Debian build artifacts
+*.buildinfo
+*.changes
